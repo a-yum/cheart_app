@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import './theme/cheart_theme.dart';
+import './styles/cheart_theme.dart';
 import './screens/home_screen.dart';
 
 void main() {
