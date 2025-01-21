@@ -1,30 +1,25 @@
 import 'package:flutter/material.dart';
 
-class Navbar extends StatefulWidget {
-  const Navbar({super.key});
+class Navbar extends StatelessWidget {
+  final int selectedIndex;
+  final Function(int) onDestinationSelected;
 
-  @override
-  _NavbarState createState() => _NavbarState();
-}
-
-class _NavbarState extends State<Navbar> {
-  int _selectedIndex = 0; // Tracks selected index (default to 0)
-
-  void _onDestinationSelected(int index) {
-    setState(() {
-      _selectedIndex = index; // Update selected index on tap
-    });
-  }
+  const Navbar({
+    Key? key,
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    const Color navbarBackgroundColor = Color(0xFFFFCDD2); // 0xFFFFCDD2
+    const Color navbarBackgroundColor =
+        Color(0xFFFFCDD2); // Custom background color
 
     return NavigationBar(
-      selectedIndex: _selectedIndex,
-      onDestinationSelected: _onDestinationSelected,
+      selectedIndex: selectedIndex,
+      onDestinationSelected: onDestinationSelected,
       backgroundColor: navbarBackgroundColor,
-      destinations: [
+      destinations: const [
         NavigationDestination(
           icon: Icon(Icons.home),
           label: 'Home',
