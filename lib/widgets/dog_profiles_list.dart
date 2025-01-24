@@ -1,3 +1,4 @@
+import 'package:cheart/widgets/dog_profile_card.dart';
 import 'package:flutter/material.dart';
 import '../models/dog_profile.dart';
 
@@ -17,10 +18,8 @@ class DogProfilesList extends StatelessWidget {
       itemCount: dogProfiles.length,
       itemBuilder: (context, index) {
         final dogProfile = dogProfiles[index];
-        return ListTile(
-          title: Text(dogProfile.name),
-          subtitle: Text('Age: ${dogProfile.age}'),
-          onTap: () => onProfileSelected(dogProfile), // Trigger navigation
+        return DogProfileCard(
+          dog: dogProfile,
         );
       },
     );

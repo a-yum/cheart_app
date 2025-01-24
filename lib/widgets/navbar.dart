@@ -1,25 +1,23 @@
 import 'package:flutter/material.dart';
 
 class Navbar extends StatelessWidget {
-  final int selectedIndex;
-  final Function(int) onDestinationSelected;
+  final int currentIndex;
+  final ValueChanged<int> onDestinationSelected;
 
   const Navbar({
-    Key? key,
-    required this.selectedIndex,
+    super.key,
+    required this.currentIndex,
     required this.onDestinationSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    const Color navbarBackgroundColor =
-        Color(0xFFFFCDD2); // Custom background color
-
+    const Color navbarBackgroundColor = Color(0xFFFFCDD2); // test color
     return NavigationBar(
-      selectedIndex: selectedIndex,
+      selectedIndex: currentIndex,
       onDestinationSelected: onDestinationSelected,
       backgroundColor: navbarBackgroundColor,
-      destinations: const [
+      destinations: const <Widget>[
         NavigationDestination(
           icon: Icon(Icons.home),
           label: 'Home',

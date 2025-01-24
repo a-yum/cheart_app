@@ -77,7 +77,7 @@ class DogProfileCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Avg. Breathing Rate: ${dog.avgHeartRate} BPM',
+                    'Avg. Breathing Rate: ${dog.avgHeartRate ?? 'n/a'} BPM',
                     style: theme.textTheme.bodyLarge,
                   ),
                 ],
