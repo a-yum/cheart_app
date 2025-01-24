@@ -1,27 +1,31 @@
+import 'package:cheart/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import '../widgets/add_dog_form.dart';
 import '../widgets/dog_profiles_list.dart';
 import '../widgets/navbar.dart';
 import '../models/dog_profile.dart';
-import '../screens/breathing_tracker_screen.dart'; // Import BreathingTrackerScreen
+import 'breathing_tracker_screen.dart';
+import 'breathing_chartgraph_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+  int currentIndex = 0;
   List<DogProfile> _dogProfiles = [];
 
-  void _onDestinationSelected(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  final List<Widget> _screens = <Widget>[
+    Container(),
+    BreathingChartGraphScreen(),
+    BreathingTrackerScreen(),
+    SettingsScreen()
+  ];
 
+  // Move?
   void _addNewDog() {
     showModalBottomSheet(
       context: context,
@@ -48,52 +52,60 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: colorScheme.primaryContainer,
         foregroundColor: colorScheme.onPrimaryContainer,
       ),
-      body: _dogProfiles.isEmpty
-          ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min, // Minimize column size
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Welcome to CHeart!',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyLarge,
+      body: currentIndex == 0
+          ? (_dogProfiles.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Welcome to CHeart!',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          "Canine Heart tracking app that helps you track your dog's breathing rate.",
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        const SizedBox(height: 50),
+                        Text(
+                          'Tap the "+" button below to add your doggo.',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(color: Colors.grey),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 20),
-                    Text(
-                      "Canine Heart tracking app that helps you track your dog's breathing rate.",
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                )
+              : SingleChildScrollView(
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height - 200,
+                    child: DogProfilesList(
+                      dogProfiles: _dogProfiles,
+                      onProfileSelected: (DogProfile) {},
                     ),
-                    const SizedBox(height: 50),
-                    Text(
-                      'Tap the "+" button below to add your doggo.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium
-                          ?.copyWith(color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: DogProfilesList(
-                dogProfiles: _dogProfiles,
-                onProfileSelected: (DogProfile) {},
-              ),
-            ),
+                  ),
+                ))
+          : _screens[currentIndex],
       floatingActionButton: FloatingActionButton(
         onPressed: _addNewDog,
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: Navbar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onDestinationSelected,
+        onDestinationSelected: (int index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
+        currentIndex: currentIndex,
       ),
     );
   }
