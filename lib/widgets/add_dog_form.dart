@@ -1,13 +1,13 @@
-import 'package:cheart/models/dog_profile.dart';
+import 'package:cheart/models/dog_profile_model.dart';
 import 'package:flutter/material.dart';
 
 class AddDogForm extends StatefulWidget {
-  final Function(DogProfile) onSubmit;
+  final Function(DogProfileModel) onSubmit;
 
   const AddDogForm({
-    Key? key,
+    super.key,
     required this.onSubmit,
-  }) : super(key: key);
+  });
 
   @override
   State<AddDogForm> createState() => _AddDogFormState();
@@ -31,7 +31,7 @@ class _AddDogFormState extends State<AddDogForm> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      final newDog = DogProfile(
+      final newDog = DogProfileModel(
         id: DateTime.now().toString(), // Use UUID in production
         name: _nameController.text,
         breed: _breedController.text,
@@ -45,7 +45,7 @@ class _AddDogFormState extends State<AddDogForm> {
   }
 
   void _cancelForm() {
-    Navigator.pop(context); // Close the modal bottom sheet
+    Navigator.pop(context);
   }
 
   @override
@@ -144,8 +144,7 @@ class _AddDogFormState extends State<AddDogForm> {
                   child: ElevatedButton(
                     onPressed: _cancelForm,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          Colors.grey, // Optional: Gray cancel button
+                      backgroundColor: Colors.grey, // ToDo: change this
                     ),
                     child: const Text('Cancel'),
                   ),

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../widgets/add_dog_form.dart';
 import '../widgets/dog_profiles_list.dart';
 import '../widgets/navbar.dart';
-import '../models/dog_profile.dart';
+import '../models/dog_profile_model.dart';
 import 'breathing_tracker_screen.dart';
 import 'breathing_chartgraph_screen.dart';
 
@@ -16,7 +16,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int currentIndex = 0;
-  List<DogProfile> _dogProfiles = [];
+  final List<DogProfileModel> _dogProfiles = [];
 
   final List<Widget> _screens = <Widget>[
     Container(),
@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       isScrollControlled: true,
       builder: (context) => AddDogForm(
-        onSubmit: (DogProfile newDog) {
+        onSubmit: (DogProfileModel newDog) {
           setState(() {
             _dogProfiles.add(newDog);
           });
@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 20),
                         Text(
-                          "Canine Heart tracking app that helps you track your dog's breathing rate.",
+                          "Canine Heart tracking app that helps you track your dog's respiratory rate.",
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
@@ -95,10 +95,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ))
           : _screens[currentIndex],
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addNewDog,
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: currentIndex == 0
+          ? FloatingActionButton(
+              onPressed: _addNewDog,
+              child: const Icon(Icons.add),
+            )
+          : null,
       bottomNavigationBar: Navbar(
         onDestinationSelected: (int index) {
           setState(() {

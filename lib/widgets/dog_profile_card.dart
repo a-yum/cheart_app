@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import '../models/dog_profile.dart';
+import '../models/dog_profile_model.dart';
 
 class DogProfileCard extends StatelessWidget {
-  final DogProfile dog;
+  final DogProfileModel dog;
 
   const DogProfileCard({
-    Key? key,
+    super.key,
     required this.dog,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
