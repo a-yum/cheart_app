@@ -1,16 +1,16 @@
 import 'package:cheart/widgets/dog_profile_card.dart';
 import 'package:flutter/material.dart';
-import '../models/dog_profile.dart';
+import '../models/dog_profile_model.dart';
 
 class DogProfilesList extends StatelessWidget {
-  final List<DogProfile> dogProfiles;
-  final Function(DogProfile) onProfileSelected;
+  final List<DogProfileModel> dogProfiles;
+  final Function(DogProfileModel) onProfileSelected;
 
   const DogProfilesList({
-    Key? key,
+    super.key,
     required this.dogProfiles,
     required this.onProfileSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
