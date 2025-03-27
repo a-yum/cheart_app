@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import './themes/cheart_theme.dart';
-import './screens/home_screen.dart';
+import '/themes/cheart_theme.dart';
+import '/screens/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,8 +12,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Dog Health Tracker',
-      theme: CheartTheme.theme,
+      title: 'CHeart',
+      theme: CHeartTheme.theme,
       home: const HomeScreen(),
     );
   }
