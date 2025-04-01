@@ -22,11 +22,8 @@ class PetLandingScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavbar(
+      bottomNavigationBar: const BottomNavbar(
         currentIndex: 1,
-        onTap: (index) {
-          // TODO: Navigation logic will be implemented when global state is added
-        },
       ),
     );
   }

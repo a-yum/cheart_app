@@ -63,11 +63,8 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavbar(
+      bottomNavigationBar: const BottomNavbar(
         currentIndex: 0, // Home is active
-        onTap: (index) {
-          // ToDO: Navigation logic will be implemented when global state is added
-        },
       ),
     );
   }
