@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '/themes/cheart_theme.dart';
-import '/components/bottom_navbar.dart';
+import 'package:cheart/themes/cheart_theme.dart';
+import 'package:cheart/components/bottom_navbar.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -23,7 +23,7 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: const BottomNavbar(
-        currentIndex: 3,
+        currentIndex: 4,
     ),
     );
   }

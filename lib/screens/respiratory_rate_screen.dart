@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '/themes/cheart_theme.dart';
-import '/components/bottom_navbar.dart';
+import 'package:cheart/themes/cheart_theme.dart';
+import 'package:cheart/components/bottom_navbar.dart';
 
 class RespiratoryRateScreen extends StatelessWidget {
   const RespiratoryRateScreen({super.key});
