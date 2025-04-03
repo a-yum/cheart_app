@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '/themes/cheart_theme.dart';
-import '/config/cheart_routes.dart';
+import 'package:cheart/themes/cheart_theme.dart';
+import 'package:cheart/config/cheart_routes.dart';
 
 class BottomNavbar extends StatelessWidget {
   final int currentIndex;
@@ -22,6 +22,9 @@ class BottomNavbar extends StatelessWidget {
         Navigator.pushReplacementNamed(context, AppRoutes.respiratory);
         break;
       case 3:
+        Navigator.pushReplacementNamed(context, AppRoutes.graph);
+        break;
+      case 4:
         Navigator.pushReplacementNamed(context, AppRoutes.settings);
         break;
     }
@@ -38,7 +41,8 @@ class BottomNavbar extends StatelessWidget {
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
         BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Pet'),
-        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Graph'),
+        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Respiratory'),
+        BottomNavigationBarItem(icon: Icon(Icons.monitor_heart), label: 'Graph'),
         BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
       ],
     );

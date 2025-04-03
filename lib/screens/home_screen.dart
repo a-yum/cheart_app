@@ -1,7 +1,11 @@
+import 'package:cheart/screens/pet_landing_screen.dart';
 import 'package:flutter/material.dart';
-import '/themes/cheart_theme.dart';
-import '/components/bottom_navbar.dart';
-import '/components/dog_card_list.dart';
+import 'package:provider/provider.dart';
+import 'package:cheart/components/add_pet_modal.dart';
+import 'package:cheart/providers/pet_profile_provider.dart';
+import 'package:cheart/themes/cheart_theme.dart';
+import 'package:cheart/components/bottom_navbar.dart';
+import 'package:cheart/components/pet_card_list.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -19,22 +23,38 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Select Dog',
+                'Pet Profiles',
                 style: CHeartTheme.sectionTitle,
               ),
               const SizedBox(height: 16),
               
               // TODO: Replace with DogCardList widget
               //==========================================
-              Container(
-                height: 100,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Center(
-                  child: Text('Coming Soon'),
-                ),
+              Consumer<PetProfileProvider>(
+                builder: (context, petProvider, child) {
+                  return PetCardList(
+                    petNames: petProvider.petNames,
+                    onAddPet: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AddPetModal(
+                          onSave: (newPet) {
+                            context.read<PetProfileProvider>().addPetProfile(newPet);
+                          },
+                        ),
+                      );
+                    }, 
+                    onPetSelected: (petName) {
+                      final selectedPet = petProvider.petProfiles.firstWhere((profile) => profile.petName == petName);
+                      petProvider.selectPetProfile(selectedPet);
+                      
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PetLandingScreen()),
+                      );
+                    },
+                  );
+                },
               ),
               //==========================================
 
