@@ -5,7 +5,6 @@ class RespiratoryModel {
   final String state; // pet is at rest or sleep at time of monitoring
   final String? notes;
   final bool isNormal; // above or below normal threshold
-  final bool isSaved;
 
   RespiratoryModel({
     required this.id,
@@ -14,6 +13,5 @@ class RespiratoryModel {
     required this.state,
     this.notes,
     required this.isNormal,
-    required this.isSaved,
   });
 }

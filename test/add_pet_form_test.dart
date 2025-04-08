@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cheart/models/pet_profile_model.dart';
-import 'package:cheart/factories/pet_profile_factory.dart';
 import 'package:cheart/components/add_pet_form.dart';
 
 void main() {
