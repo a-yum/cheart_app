@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import 'package:cheart/factories/pet_profile_factory.dart';
 import 'package:cheart/models/pet_profile_model.dart';
+import 'package:cheart/utils/validators.dart';
+import 'package:cheart/utils/date_utils.dart';
 
 class AddPetForm extends StatefulWidget {
   final Function(PetProfileModel) onSave;
@@ -160,12 +163,7 @@ class _AddPetFormState extends State<AddPetForm> {
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.pets),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your pet\'s name';
-                        }
-                        return null;
-                      },
+                      validator: (value) => Validators.required(value, 'pet\'s name'),
                     ),
                     const SizedBox(height: 16),
                     // Breed Input
@@ -176,12 +174,7 @@ class _AddPetFormState extends State<AddPetForm> {
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.category),
                       ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter your pet\'s breed';
-                        }
-                        return null;
-                      },
+                      validator: (value) => Validators.required(value, 'pet\'s breed'),
                     ),
                     const SizedBox(height: 16),
                     // Birth Date Picker
@@ -199,7 +192,7 @@ class _AddPetFormState extends State<AddPetForm> {
                             Text(
                               _selectedMonth == null || _selectedYear == null
                                   ? 'Select Date'
-                                  : '${DateFormat('MMMM').format(DateTime(2024, _selectedMonth!))} $_selectedYear',
+                                  : formatMonthYear(_selectedMonth, _selectedYear),
                               style: TextStyle(
                                 color: _selectedMonth == null || _selectedYear == null
                                     ? Colors.grey.shade600
@@ -221,12 +214,7 @@ class _AddPetFormState extends State<AddPetForm> {
                         prefixIcon: Icon(Icons.email),
                       ),
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value != null && value.isNotEmpty && !value.contains('@')) {
-                          return 'Please enter a valid email';
-                        }
-                        return null;
-                      },
+                      validator: Validators.email,
                     ),
                     const SizedBox(height: 16),
                   ],
