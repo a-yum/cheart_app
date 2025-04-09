@@ -1,3 +1,4 @@
+import 'package:cheart/controllers/pet_form_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -8,8 +9,9 @@ import 'package:cheart/utils/date_utils.dart';
 
 class AddPetForm extends StatefulWidget {
   final Function(PetProfileModel) onSave;
+  final PetProfileModel? initialPet;
 
-  const AddPetForm({super.key, required this.onSave});
+  const AddPetForm({super.key, required this.onSave, this.initialPet});
 
   @override
   State<AddPetForm> createState() => _AddPetFormState();
@@ -17,18 +19,25 @@ class AddPetForm extends StatefulWidget {
 
 class _AddPetFormState extends State<AddPetForm> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _breedController = TextEditingController();
-  final _vetEmailController = TextEditingController();
-  int? _selectedMonth;
-  int? _selectedYear;
+  late PetFormController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = PetFormController(initialPet: widget.initialPet);
+  }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _breedController.dispose();
-    _vetEmailController.dispose();
+    _controller.dispose();
     super.dispose();
+  }
+  void _handleSave() {
+  final pet = _controller.validateAndCreate(_formKey);
+    if (pet != null) {
+      widget.onSave(pet);
+      Navigator.pop(context);
+    }
   }
 
   void _showMonthYearPicker(BuildContext context) {
@@ -42,7 +51,7 @@ class _AddPetFormState extends State<AddPetForm> {
             children: [
               // Month Dropdown
               DropdownButtonFormField<int>(
-                value: _selectedMonth,
+                value: _controller.selectedMonth,
                 decoration: const InputDecoration(
                   labelText: 'Month',
                   border: OutlineInputBorder(),
@@ -56,14 +65,14 @@ class _AddPetFormState extends State<AddPetForm> {
                 }),
                 onChanged: (value) {
                   setState(() {
-                    _selectedMonth = value;
+                    _controller.selectedMonth = value;
                   });
                 },
               ),
               const SizedBox(height: 16),
               // Year Dropdown
               DropdownButtonFormField<int>(
-                value: _selectedYear,
+                value: _controller.selectedYear,
                 decoration: const InputDecoration(
                   labelText: 'Year',
                   border: OutlineInputBorder(),
@@ -77,7 +86,7 @@ class _AddPetFormState extends State<AddPetForm> {
                 }),
                 onChanged: (value) {
                   setState(() {
-                    _selectedYear = value;
+                    _controller.selectedYear = value;
                   });
                 },
               ),
@@ -98,22 +107,6 @@ class _AddPetFormState extends State<AddPetForm> {
         );
       },
     );
-  }
-
-  void _handleSave() {
-    if (_formKey.currentState!.validate()) {
-      final newPet = PetProfileFactory.create(
-        petName: _nameController.text,
-        petBreed: _breedController.text,
-        birthMonth: _selectedMonth,
-        birthYear: _selectedYear,
-        vetEmail: _vetEmailController.text.isEmpty
-            ? null
-            : _vetEmailController.text,
-      );
-      widget.onSave(newPet);
-      Navigator.pop(context);
-    }
   }
 
   @override
@@ -157,7 +150,7 @@ class _AddPetFormState extends State<AddPetForm> {
                   children: [
                     // Pet Name Input
                     TextFormField(
-                      controller: _nameController,
+                      controller: _controller.nameController,
                       decoration: const InputDecoration(
                         labelText: 'Pet Name*',
                         border: OutlineInputBorder(),
@@ -168,7 +161,7 @@ class _AddPetFormState extends State<AddPetForm> {
                     const SizedBox(height: 16),
                     // Breed Input
                     TextFormField(
-                      controller: _breedController,
+                      controller: _controller.breedController,
                       decoration: const InputDecoration(
                         labelText: 'Breed*',
                         border: OutlineInputBorder(),
@@ -190,11 +183,11 @@ class _AddPetFormState extends State<AddPetForm> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              _selectedMonth == null || _selectedYear == null
+                              _controller.selectedMonth == null || _controller.selectedYear == null
                                   ? 'Select Date'
-                                  : formatMonthYear(_selectedMonth, _selectedYear),
+                                  : formatMonthYear(_controller.selectedMonth, _controller.selectedYear),
                               style: TextStyle(
-                                color: _selectedMonth == null || _selectedYear == null
+                                color: _controller.selectedMonth == null || _controller.selectedYear == null
                                     ? Colors.grey.shade600
                                     : Colors.black,
                               ),
@@ -207,7 +200,7 @@ class _AddPetFormState extends State<AddPetForm> {
                     const SizedBox(height: 16),
                     // Vet Email Input
                     TextFormField(
-                      controller: _vetEmailController,
+                      controller: _controller.vetEmailController,
                       decoration: const InputDecoration(
                         labelText: 'Vet Email',
                         border: OutlineInputBorder(),
