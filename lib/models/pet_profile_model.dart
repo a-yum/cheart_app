@@ -1,4 +1,3 @@
-import 'package:cheart/factories/pet_profile_factory.dart';
 
 class PetProfileModel {
   int? id;

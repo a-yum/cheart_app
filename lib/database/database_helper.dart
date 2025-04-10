@@ -55,14 +55,21 @@ class DatabaseHelper {
       ''');
       await db.execute('''
         CREATE TABLE respiratory_data (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+          pet_id INTEGER,
           time_stamp TEXT,
           respiratory_rate REAL,
           state TEXT,
           notes TEXT,
-          is_normal INTEGER
-        )
+          is_normal INTEGER,
+          FOREIGN KEY (pet_id) REFERENCES pet_profiles(id) ON DELETE CASCADE
+        );
       ''');
+
+      await db.execute('''
+        CREATE INDEX idx_pet_id ON respiratory_data(pet_id);
+      ''');
+      
     } catch (e) { // toDo: Update after imp
       print("Error creating tables: $e");
       rethrow;

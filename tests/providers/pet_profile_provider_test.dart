@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+
 import 'package:cheart/models/pet_profile_model.dart';
 import 'package:cheart/providers/pet_profile_provider.dart';
 
@@ -6,16 +7,18 @@ void main() {
   group('PetProfileProvider', () {
     late PetProfileProvider provider;
 
-    // Set up a fresh provider before each test:
+    // ==================== Setup ====================
     setUp(() {
       provider = PetProfileProvider();
     });
 
+    // ==================== Initialization Test ====================
     test('should start with one default profile', () {
       expect(provider.petProfiles.length, 1);
       expect(provider.petProfiles.first.petName, 'test');
     });
 
+    // ==================== Add Pet ====================
     test('addPetProfile should add a new profile', () {
       final newPet = PetProfileModel(
         id: 1,
@@ -26,11 +29,14 @@ void main() {
         vetEmail: null,
         petImageUrl: '',
       );
+
       provider.addPetProfile(newPet);
+
       expect(provider.petProfiles.length, 2);
       expect(provider.petNames, contains('Buddy'));
     });
 
+    // ==================== Select Pet ====================
     test('selectPetProfile should update selectedPetProfile', () {
       final newPet = PetProfileModel(
         id: 2,
@@ -41,13 +47,15 @@ void main() {
         vetEmail: null,
         petImageUrl: '',
       );
+
       provider.addPetProfile(newPet);
       provider.selectPetProfile(newPet);
+
       expect(provider.selectedPetProfile, equals(newPet));
     });
 
+    // ==================== Update Vet Email ====================
     test('updateVetEmail should update email on selected pet', () {
-      // First, select an existing profile:
       final newPet = PetProfileModel(
         id: 3,
         petName: 'Max',
@@ -57,13 +65,16 @@ void main() {
         vetEmail: null,
         petImageUrl: '',
       );
+
       provider.addPetProfile(newPet);
       provider.selectPetProfile(newPet);
 
       provider.updateVetEmail('vet@example.com');
+
       expect(provider.selectedPetProfile!.vetEmail, 'vet@example.com');
     });
 
+    // ==================== Remove Pet ====================
     test('removePetProfile should remove profile and clear selection if removed', () {
       final newPet = PetProfileModel(
         id: 4,
@@ -74,16 +85,20 @@ void main() {
         vetEmail: 'vet@example.com',
         petImageUrl: '',
       );
+
       provider.addPetProfile(newPet);
       provider.selectPetProfile(newPet);
+
       expect(provider.petProfiles.contains(newPet), isTrue);
+
       provider.removePetProfile(newPet);
+
       expect(provider.petProfiles.contains(newPet), isFalse);
       expect(provider.selectedPetProfile, isNull);
     });
 
+    // ==================== Update Pet ====================
     test('updatePetProfile should update the given profile by id', () {
-      // Add a new pet
       final newPet = PetProfileModel(
         id: 5,
         petName: 'Charlie',
@@ -93,9 +108,9 @@ void main() {
         vetEmail: null,
         petImageUrl: '',
       );
+
       provider.addPetProfile(newPet);
 
-      // Create an updated profile (could be a copy with changes)
       final updatedPet = PetProfileModel(
         id: 5,
         petName: 'Charlie',
@@ -109,6 +124,7 @@ void main() {
       provider.updatePetProfile(5, updatedPet);
 
       final petFromProvider = provider.petProfiles.firstWhere((p) => p.id == 5);
+
       expect(petFromProvider.petBreed, 'Beagle Mix');
       expect(petFromProvider.vetEmail, 'updated@example.com');
     });
