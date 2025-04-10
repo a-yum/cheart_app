@@ -1,18 +1,23 @@
-import 'package:cheart/controllers/pet_form_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
-import 'package:cheart/factories/pet_profile_factory.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
+
+import 'package:cheart/controllers/pet_form_controller.dart';
+import 'package:cheart/dao/pet_profile_dao.dart';
 import 'package:cheart/models/pet_profile_model.dart';
-import 'package:cheart/utils/validators.dart';
+import 'package:cheart/providers/pet_profile_provider.dart';
 import 'package:cheart/utils/date_utils.dart';
+import 'package:cheart/utils/validators.dart';
 
 class AddPetForm extends StatefulWidget {
   final Function(PetProfileModel) onSave;
   final PetProfileModel? initialPet;
 
   const AddPetForm({super.key, required this.onSave, this.initialPet});
-
+  
   @override
   State<AddPetForm> createState() => _AddPetFormState();
 }
@@ -20,11 +25,13 @@ class AddPetForm extends StatefulWidget {
 class _AddPetFormState extends State<AddPetForm> {
   final _formKey = GlobalKey<FormState>();
   late PetFormController _controller;
+  late PetProfileDAO _petProfileDAO;
 
   @override
   void initState() {
     super.initState();
     _controller = PetFormController(initialPet: widget.initialPet);
+    _petProfileDAO = PetProfileDAO();
   }
 
   @override
@@ -32,11 +39,30 @@ class _AddPetFormState extends State<AddPetForm> {
     _controller.dispose();
     super.dispose();
   }
-  void _handleSave() {
-  final pet = _controller.validateAndCreate(_formKey);
+
+  void _handleSave() async {
+    final pet = _controller.validateAndCreate(_formKey);
     if (pet != null) {
-      widget.onSave(pet);
-      Navigator.pop(context);
+      try {
+        await _petProfileDAO.insertPetProfile(pet);
+
+        if (!mounted) return;
+
+        final provider = Provider.of<PetProfileProvider>(context, listen: false);
+        provider.addPetProfile(pet);
+        provider.selectPetProfile(pet);
+
+        Navigator.pop(context, pet); // Pass pet profile back to parent
+      } catch (e) {
+        if (!mounted) return; // protects UI. Checks if widget is active.
+
+        showTopSnackBar(
+          Overlay.of(context),
+          CustomSnackBar.error(
+            message: "Failed to save pet profile: $e",
+          ),
+        );
+      }
     }
   }
 
