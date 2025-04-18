@@ -1,63 +1,75 @@
+import 'package:flutter/foundation.dart';
+
 import 'package:sqflite/sqflite.dart';
 
 import 'package:cheart/models/pet_profile_model.dart';
-import 'package:cheart/database/database_helper.dart';
+import 'package:cheart/exceptions/data_access_exception.dart';
 
 class PetProfileDAO {
-  final DatabaseHelper _dbHelper = DatabaseHelper();
+  final Database _db;
+  PetProfileDAO(this._db);
 
-  Future<int> insertPetProfile(PetProfileModel pet) async {
+  static const String _table = 'pet_profiles';
+
+  Future<int> savePetProfile(PetProfileModel pet) async {
     try {
-      final Database db = await _dbHelper.database;
-      return await db.insert(
-        'pet_profiles',
+      return await _db.insert(
+        _table,
         pet.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
+    } on DatabaseException catch (e) {
+      debugPrint('🛑 DatabaseException in insertPetProfile: $e');
+      throw DataAccessException('Failed to insert pet profile', e);
     } catch (e) {
-      print("Error inserting pet profile: $e");
-      rethrow;
+      debugPrint('🛑 Unexpected in insertPetProfile: $e');
+      throw DataAccessException('Unexpected error inserting pet profile', e);
     }
   }
 
   Future<List<PetProfileModel>> getPetProfiles() async {
     try {
-      final Database db = await _dbHelper.database;
-      final List<Map<String, dynamic>> maps = await db.query('pet_profiles');
-      return maps.map((map) => PetProfileModel.fromMap(map)).toList();
-    } catch (e) { // toDo: Update after imp
-      print("Error getting pet profiles: $e");
-      rethrow;
+      final maps = await _db.query(_table);
+      return maps.map((m) => PetProfileModel.fromMap(m)).toList();
+    } on DatabaseException catch (e) {
+      debugPrint('🛑 DatabaseException in getPetProfiles: $e');
+      throw DataAccessException('Failed to load pet profiles', e);
+    } catch (e) {
+      debugPrint('🛑 Unexpected in getPetProfiles: $e');
+      throw DataAccessException('Unexpected error loading pet profiles', e);
     }
   }
 
   Future<int> updatePetProfile(PetProfileModel pet) async {
     try {
-      final Database db = await _dbHelper.database;
-      return await db.update(
-        'pet_profiles',
+      return await _db.update(
+        _table,
         pet.toMap(),
         where: 'id = ?',
         whereArgs: [pet.id],
       );
-    } catch (e) { // toDo: Update after imp
-      print("Error updating pet profile: $e");
-      rethrow;
+    } on DatabaseException catch (e) {
+      debugPrint('🛑 DatabaseException in updatePetProfile: $e');
+      throw DataAccessException('Failed to update pet profile', e);
+    } catch (e) {
+      debugPrint('🛑 Unexpected in updatePetProfile: $e');
+      throw DataAccessException('Unexpected error updating pet profile', e);
     }
   }
 
-  Future<int> deletePetProfile(int id) async {
+  Future<int> deletePetProfile(String id) async {
     try {
-      final Database db = await _dbHelper.database;
-      return await db.delete(
-        'pet_profiles',
+      return await _db.delete(
+        _table,
         where: 'id = ?',
         whereArgs: [id],
       );
-    } catch (e) { // toDo: Update after imp
-      print("Error deleting pet profile: $e");
-      rethrow;
+    } on DatabaseException catch (e) {
+      debugPrint('🛑 DatabaseException in deletePetProfile: $e');
+      throw DataAccessException('Failed to delete pet profile', e);
+    } catch (e) {
+      debugPrint('🛑 Unexpected in deletePetProfile: $e');
+      throw DataAccessException('Unexpected error deleting pet profile', e);
     }
   }
-
 }
