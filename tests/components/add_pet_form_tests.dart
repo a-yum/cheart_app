@@ -12,7 +12,77 @@ class MockPetProfileDAO extends Mock implements PetProfileDAO {}
 
 class MockPetProfileProvider extends Mock implements PetProfileProvider {}
 
+// toDo: get this working
+// ==================== Test: Provider Save and Navigation Pop ====================
+// class MockPetProfileProvider extends Mock implements PetProfileProvider {}
+// class MockNavigatorObserver extends Mock implements NavigatorObserver {}
+
+// void main() {
+//   late MockPetProfileProvider mockProvider;
+//   late MockNavigatorObserver mockObserver;
+
+//   setUp(() {
+//     mockProvider = MockPetProfileProvider();
+//     mockObserver = MockNavigatorObserver();
+//   });
+
+//   testWidgets(
+//     'AddPetForm calls provider.savePetProfile and pops with saved pet',
+//     (WidgetTester tester) async {
+//       // Prepare test pet
+//       final testPet = PetProfileModel(
+//         id: 1,
+//         petName: 'Luna',
+//         petBreed: 'Beagle',
+//         birthMonth: 3,
+//         birthYear: 2020,
+//         vetEmail: 'test@example.com',
+//         petImageUrl: '',
+//       );
+
+//       when(mockProvider.savePetProfile(any))
+//           .thenAnswer((_) async => testPet);
+
+//       await tester.pumpWidget(
+//         MaterialApp(
+//           home: ChangeNotifierProvider<PetProfileProvider>.value(
+//             value: mockProvider,
+//             child: Builder(
+//               builder: (context) => AddPetForm(onSave: (_) {}),
+//             ),
+//           ),
+//           navigatorObservers: [mockObserver],
+//         ),
+//       );
+
+//       // Fill in required fields
+//       await tester.enterText(
+//         find.widgetWithText(TextFormField, 'Pet Name*'),
+//         testPet.petName,
+//       );
+//       await tester.enterText(
+//         find.widgetWithText(TextFormField, 'Breed*'),
+//         testPet.petBreed,
+//       );
+
+//       // Tap Save
+//       await tester.tap(find.widgetWithText(ElevatedButton, 'Save'));
+//       await tester.pumpAndSettle();
+
+//       // Verify provider called
+//       verify(mockProvider.savePetProfile(argThat(
+//         isA<PetProfileModel>().having((p) => p.petName, 'petName', 'Luna'),
+//       ))).called(1);
+
+//       // Verify navigation pop
+//       verify(mockObserver.didPop(any, any)).called(1);
+//     },
+//   );
+// }
+
+
 void main() {
+  // ==================== Test: Valid submission triggers onSave callback ====================
   testWidgets('AddPetForm valid submission triggers onSave with correct values',
       (WidgetTester tester) async {
     PetProfileModel? savedPet;

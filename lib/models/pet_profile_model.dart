@@ -67,4 +67,27 @@ class PetProfileModel {
       petImageUrl: map['pet_image_url'] as String?,
     );
   }
+  
+  // Returns a copy of this model with the given fields replaced.
+  PetProfileModel copyWith({
+    int? id,
+    String? petName,
+    int? birthMonth,
+    int? birthYear,
+    String? petBreed,
+    String? vetEmail,
+    String? petImageUrl,
+  }) {
+    return PetProfileModel(
+      id: id ?? this.id,
+      petName: petName ?? this.petName,
+      birthMonth: birthMonth ?? this.birthMonth,
+      birthYear: birthYear ?? this.birthYear,
+      petBreed: petBreed ?? this.petBreed,
+      vetEmail: vetEmail ?? this.vetEmail,
+      petImageUrl: petImageUrl ?? this.petImageUrl,
+    );
+  }
+
+  
 }

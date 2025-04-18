@@ -16,22 +16,24 @@ class AddPetForm extends StatefulWidget {
   final Function(PetProfileModel) onSave;
   final PetProfileModel? initialPet;
 
-  const AddPetForm({super.key, required this.onSave, this.initialPet});
-  
+  const AddPetForm({
+    super.key,
+    required this.onSave,
+    this.initialPet,
+  });
+
   @override
   State<AddPetForm> createState() => _AddPetFormState();
 }
 
 class _AddPetFormState extends State<AddPetForm> {
   final _formKey = GlobalKey<FormState>();
-  late PetFormController _controller;
-  late PetProfileDAO _petProfileDAO;
+  late final PetFormController _controller;
 
   @override
   void initState() {
     super.initState();
     _controller = PetFormController(initialPet: widget.initialPet);
-    _petProfileDAO = PetProfileDAO();
   }
 
   @override
@@ -40,110 +42,107 @@ class _AddPetFormState extends State<AddPetForm> {
     super.dispose();
   }
 
-  // toDo: Refactor to provider + setup dependency injection
   // toDo: implement adding image for pet
-  void _handleSave() async {
+  Future<void> _handleSave() async {
     final pet = _controller.validateAndCreate(_formKey);
-    if (pet != null) {
-      try {
-        await _petProfileDAO.insertPetProfile(pet);
+    if (pet == null) return;
 
-        if (!mounted) return;
+    try {
+      final provider =
+          Provider.of<PetProfileProvider>(context, listen: false);
+      final savedPet = await provider.savePetProfile(pet);
 
-        final provider = Provider.of<PetProfileProvider>(context, listen: false);
-        provider.addPetProfile(pet);
-        provider.selectPetProfile(pet);
+      if (!mounted) return;
+      Navigator.pop(context, savedPet);
+    } catch (e) {
+      if (!mounted) return;
 
-        Navigator.pop(context, pet); // Pass pet profile back to parent
-      } catch (e) {
-        if (!mounted) return; // protects UI. Checks if widget is active.
-
-        showTopSnackBar(
-          Overlay.of(context),
-          CustomSnackBar.error(
-            message: "Failed to save pet profile: $e",
-          ),
-        );
-      }
+      showTopSnackBar(
+        Overlay.of(context),
+        CustomSnackBar.error(
+          message: "Failed to save pet profile: $e",
+        ),
+      );
     }
   }
 
   void _showMonthYearPicker(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Select Birth Date'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Month Dropdown
-              DropdownButtonFormField<int>(
-                value: _controller.selectedMonth,
-                decoration: const InputDecoration(
-                  labelText: 'Month',
-                  border: OutlineInputBorder(),
-                ),
-                items: List.generate(12, (index) {
-                  final month = index + 1;
-                  return DropdownMenuItem(
-                      value: month,
-                      child: Text(DateFormat('MMMM')
-                          .format(DateTime(2024, month))));
-                }),
-                onChanged: (value) {
-                  setState(() {
-                    _controller.selectedMonth = value;
-                  });
-                },
+      builder: (_) => AlertDialog(
+        title: const Text('Select Birth Date'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Month Dropdown
+            DropdownButtonFormField<int>(
+              value: _controller.selectedMonth,
+              decoration: const InputDecoration(
+                labelText: 'Month',
+                border: OutlineInputBorder(),
               ),
-              const SizedBox(height: 16),
-              // Year Dropdown
-              DropdownButtonFormField<int>(
-                value: _controller.selectedYear,
-                decoration: const InputDecoration(
-                  labelText: 'Year',
-                  border: OutlineInputBorder(),
-                ),
-                items: List.generate(30, (index) {
-                  final year = DateTime.now().year - index;
-                  return DropdownMenuItem(
-                    value: year,
-                    child: Text(year.toString()),
-                  );
-                }),
-                onChanged: (value) {
-                  setState(() {
-                    _controller.selectedYear = value;
-                  });
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
+              items: List.generate(12, (idx) {
+                final month = idx + 1;
+                return DropdownMenuItem(
+                  value: month,
+                  child: Text(
+                    DateFormat('MMMM').format(
+                      DateTime(DateTime.now().year, month),
+                    ),
+                  ),
+                );
+              }),
+              onChanged: (value) {
+                setState(() {
+                  _controller.selectedMonth = value;
+                });
               },
-              child: const Text('OK'),
+            ),
+            const SizedBox(height: 16),
+
+            // Year Dropdown
+            DropdownButtonFormField<int>(
+              value: _controller.selectedYear,
+              decoration: const InputDecoration(
+                labelText: 'Year',
+                border: OutlineInputBorder(),
+              ),
+              items: List.generate(30, (idx) {
+                final year = DateTime.now().year - idx;
+                return DropdownMenuItem(
+                  value: year,
+                  child: Text(year.toString()),
+                );
+              }),
+              onChanged: (value) {
+                setState(() {
+                  _controller.selectedYear = value;
+                });
+              },
             ),
           ],
-        );
-      },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // ToDo: Test Screen Sizes
+    final maxWidth = MediaQuery.of(context).size.width;
+    final dialogWidth = maxWidth > 600 ? maxWidth * 0.6 : maxWidth * 0.9;
+
     return Container(
-      width: MediaQuery.of(context).size.width > 600
-          ? MediaQuery.of(context).size.width * 0.6
-          : MediaQuery.of(context).size.width * 0.9,
+      width: dialogWidth,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.8,
         maxWidth: 600,
@@ -169,6 +168,7 @@ class _AddPetFormState extends State<AddPetForm> {
               ),
             ],
           ),
+
           Flexible(
             child: SingleChildScrollView(
               child: Form(
@@ -184,9 +184,11 @@ class _AddPetFormState extends State<AddPetForm> {
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.pets),
                       ),
-                      validator: (value) => Validators.required(value, 'pet\'s name'),
+                      validator: (value) =>
+                          Validators.required(value, 'pet\'s name'),
                     ),
                     const SizedBox(height: 16),
+
                     // Breed Input
                     TextFormField(
                       controller: _controller.breedController,
@@ -195,9 +197,11 @@ class _AddPetFormState extends State<AddPetForm> {
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.category),
                       ),
-                      validator: (value) => Validators.required(value, 'pet\'s breed'),
+                      validator: (value) =>
+                          Validators.required(value, 'pet\'s breed'),
                     ),
                     const SizedBox(height: 16),
+
                     // Birth Date Picker
                     InkWell(
                       onTap: () => _showMonthYearPicker(context),
@@ -211,11 +215,15 @@ class _AddPetFormState extends State<AddPetForm> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              _controller.selectedMonth == null || _controller.selectedYear == null
+                              _controller.selectedMonth == null ||
+                                      _controller.selectedYear == null
                                   ? 'Select Date'
-                                  : formatMonthYear(_controller.selectedMonth, _controller.selectedYear),
+                                  : formatMonthYear(
+                                      _controller.selectedMonth,
+                                      _controller.selectedYear),
                               style: TextStyle(
-                                color: _controller.selectedMonth == null || _controller.selectedYear == null
+                                color: _controller.selectedMonth == null ||
+                                        _controller.selectedYear == null
                                     ? Colors.grey.shade600
                                     : Colors.black,
                               ),
@@ -226,6 +234,7 @@ class _AddPetFormState extends State<AddPetForm> {
                       ),
                     ),
                     const SizedBox(height: 16),
+
                     // Vet Email Input
                     TextFormField(
                       controller: _controller.vetEmailController,
@@ -243,6 +252,7 @@ class _AddPetFormState extends State<AddPetForm> {
               ),
             ),
           ),
+
           // Action Buttons
           Padding(
             padding: const EdgeInsets.only(top: 16),

@@ -3,10 +3,10 @@ import 'package:sqflite/sqflite.dart';
 import 'package:cheart/models/respiratory_session_model.dart';
 
 class RespiratorySessionDAO {
-  static const String _table = 'respiratory_sessions';
-
   final Database db;
   RespiratorySessionDAO(this.db);
+
+  static const String _table = 'respiratory_sessions';
 
   Future<int> insertSession(RespiratorySessionModel session) {
     return db.insert(

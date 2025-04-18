@@ -7,10 +7,6 @@ import 'package:flutter/material.dart';
 
 class RespiratoryRateProvider extends ChangeNotifier {
   late RespiratorySessionDAO _dao;
-  
-  void setDao(RespiratorySessionDAO dao) {
-    _dao = dao;
-  }
 
   int _breathCount = 0;
   int _timeRemaining = 30;
@@ -28,6 +24,10 @@ class RespiratoryRateProvider extends ChangeNotifier {
   int get timeRemaining => _timeRemaining;
   bool get isTracking => _isTracking;
   int get breathsPerMinute => _breathCount * 2;
+
+  void setDao(RespiratorySessionDAO dao) {
+    _dao = dao;
+  }
 
   void startTracking() {
     _breathCount = 0;
