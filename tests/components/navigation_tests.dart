@@ -1,9 +1,12 @@
-import 'package:cheart/providers/pet_profile_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import 'package:provider/provider.dart';
+
 import 'package:cheart/main.dart';
 import 'package:cheart/components/bottom_navbar.dart';
-import 'package:provider/provider.dart';
+import 'package:cheart/providers/pet_profile_provider.dart';
+
 
 void main() {
   testWidgets('Navigation test - Bottom Navigation Bar', (WidgetTester tester) async {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-void navigateWithFade({
+void navigateWithFade({ // toDo: add this transition to other screens
   required BuildContext context,
   required Widget destination,
   bool replace = false,

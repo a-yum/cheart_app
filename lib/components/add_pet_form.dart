@@ -40,6 +40,8 @@ class _AddPetFormState extends State<AddPetForm> {
     super.dispose();
   }
 
+  // toDo: Refactor to provider + setup dependency injection
+  // toDo: implement adding image for pet
   void _handleSave() async {
     final pet = _controller.validateAndCreate(_formKey);
     if (pet != null) {
