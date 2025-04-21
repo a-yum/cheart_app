@@ -77,7 +77,7 @@ void main() {
       provider.startTracking();
       final state = PetState.sleeping;
 
-      await provider.saveSession(state);
+      await provider.saveSession(petId: 1, petState: state);
 
       // one insertion
       expect(fakeDao.inserted, hasLength(1));

@@ -71,16 +71,31 @@ class RespiratoryRateProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> saveSession(PetState petState) async {
-    if (_sessionTimestamp == null || _finalBreathsPerMinute == null) return;
+  Future<bool> saveSession({
+    required int petId,
+    required PetState petState,
+    String? notes,
+  }) async {
+    if (_sessionTimestamp == null || _finalBreathsPerMinute == null) {
+      return false;
+    }
+
     final session = RespiratorySessionModel(
       sessionId: null,
+      petId: petId,
       timeStamp: _sessionTimestamp!,
       respiratoryRate: _finalBreathsPerMinute!.toDouble(),
       petState: petState,
+      notes: notes,
       isBreathingRateNormal: _finalBreathsPerMinute! <= RespiratoryConstants.highBpmThreshold,
     );
-    await _dao.insertSession(session);
+
+    try {
+      await _dao.insertSession(session);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   @override

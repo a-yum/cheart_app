@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
 
-import 'package:cheart/providers/respiratory_rate_provider.dart';
 import 'package:cheart/models/respiratory_session_model.dart';
+import 'package:cheart/providers/respiratory_rate_provider.dart';
 import 'package:cheart/utils/respiratory_constants.dart';
 
 class PostSessionModal extends StatefulWidget {
   final void Function(String status)? onSave;
   final String petName;
+  final int petId;
   final int breathsPerMinute;
 
   const PostSessionModal({
     super.key,
     required this.petName,
+    required this.petId,
     required this.breathsPerMinute,
     this.onSave,
   });
@@ -24,6 +26,46 @@ class PostSessionModal extends StatefulWidget {
 
 class _PostSessionModalState extends State<PostSessionModal> {
   PetState? _selectedStatus;
+
+  Future<void> _handleSave() async {
+    if (_selectedStatus == null) return;
+
+    try {
+      final success = await context.read<RespiratoryRateProvider>()
+        .saveSession(
+          petId: widget.petId,
+          petState: _selectedStatus!,
+        );
+      
+      if (!mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Session saved successfully'),
+            backgroundColor: Colors.green, // toDo: color
+          ),
+        );
+        Navigator.pop(context);
+      } else { // toDo: handle more better
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to save session'),
+            backgroundColor: Colors.red, // toDo: color
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error saving session: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -139,14 +181,8 @@ class _PostSessionModalState extends State<PostSessionModal> {
                   onPressed: () => Navigator.pop(context),
                   child: const Text('Cancel'),
                 ),
-                ElevatedButton( // toDo: add success/fail toast
-                  onPressed: _selectedStatus == null
-                      ? null
-                      : () {
-                          context.read<RespiratoryRateProvider>()
-                            .saveSession(_selectedStatus!);
-                          Navigator.pop(context);
-                        },
+                ElevatedButton(
+                  onPressed: _selectedStatus == null ? null : _handleSave,
                   child: const Text('Save'),
                 ),
               ],

@@ -1,4 +1,6 @@
+import 'package:cheart/models/respiratory_session_model.dart';
 import 'package:flutter/material.dart';
+
 import 'package:provider/provider.dart';
 
 import 'package:cheart/components/bottom_navbar.dart';
@@ -13,21 +15,24 @@ class RespiratoryRateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final petName =
-        context.watch<PetProfileProvider>().selectedPetProfile?.petName ??
-            'your pet';
-    final respiratoryProvider = Provider.of<RespiratoryRateProvider>(context);
-    
+    final selectedPet = context.watch<PetProfileProvider>().selectedPetProfile;
+    final respiratoryProvider = context.watch<RespiratoryRateProvider>();
+
     respiratoryProvider.onSessionComplete ??= () {
-      final breathsPerMinute = context.read<RespiratoryRateProvider>().breathsPerMinute;
+      if (selectedPet == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No pet selected')),
+        );
+        return;
+      }
+
+      final breathsPerMinute = respiratoryProvider.breathsPerMinute;
       showDialog(
         context: context,
         builder: (_) => PostSessionModal(
-          petName: petName,
+          petName: selectedPet.petName,
+          petId: selectedPet.id ?? -1,
           breathsPerMinute: breathsPerMinute,
-          onSave: (status) {
-            // toDo: connect db
-          },
         ),
       );
     };
@@ -54,7 +59,7 @@ class RespiratoryRateScreen extends StatelessWidget {
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
-                          'Tracking $petName',
+                          'Tracking ${selectedPet?.petName ?? 'your pet'}',
                           style: CHeartTheme.titleText.copyWith(color: Colors.black),
                           textAlign: TextAlign.center,
                         ),
