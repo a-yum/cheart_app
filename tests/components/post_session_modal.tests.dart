@@ -10,14 +10,28 @@ import 'package:cheart/utils/respiratory_constants.dart';
 
 class TestRespiratoryProvider extends RespiratoryRateProvider {
   PetState? savedState;
+  int? savedPetId;
+  bool returnSuccess = true;
+  bool shouldThrowError = false;
+
   @override
-  Future<void> saveSession(PetState petState) async {
+  Future<bool> saveSession({
+    required int petId,
+    required PetState petState,
+    String? notes,
+  }) async {
+    if (shouldThrowError) {
+      throw Exception('Test error');
+    }
+    savedPetId = petId;
     savedState = petState;
+    return returnSuccess;
   }
 }
 
 void main() {
   const petName = 'Rover';
+  const petId = 1;
   const lowBpm = RespiratoryConstants.highBpmThreshold - 1;
   const highBpm = RespiratoryConstants.highBpmThreshold + 5;
 
@@ -28,8 +42,8 @@ void main() {
         child: Scaffold(
           body: PostSessionModal(
             petName: petName,
+            petId: petId,
             breathsPerMinute: bpm,
-            onSave: (_) {},
           ),
         ),
       ),
@@ -72,17 +86,12 @@ void main() {
       await tester.tap(find.widgetWithText(RadioListTile<PetState>, 'Sleeping'));
       await tester.pumpAndSettle();
       expect(tester.widget<ElevatedButton>(saveButton).onPressed, isNotNull);
-
-      await tester.tap(saveButton);
-      await tester.pumpAndSettle();
-
-      expect(prov.savedState, equals(PetState.sleeping));
     });
 
-    testWidgets('Selecting "At Rest" and saving calls provider accordingly',
+    testWidgets('Successful save shows success message and closes modal',
         (tester) async {
-      final prov = TestRespiratoryProvider();
-      await tester.pumpWidget(_wrapWithProvider(highBpm, prov));
+      final prov = TestRespiratoryProvider()..returnSuccess = true;
+      await tester.pumpWidget(_wrapWithProvider(lowBpm, prov));
       await tester.pumpAndSettle();
 
       await tester.tap(find.widgetWithText(RadioListTile<PetState>, 'At Rest'));
@@ -92,6 +101,41 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(prov.savedState, equals(PetState.resting));
+      expect(prov.savedPetId, equals(petId));
+      expect(find.text('Session saved successfully'), findsOneWidget);
+    });
+
+    testWidgets('Failed save shows error message and keeps modal open',
+        (tester) async {
+      final prov = TestRespiratoryProvider()..returnSuccess = false;
+      await tester.pumpWidget(_wrapWithProvider(lowBpm, prov));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(RadioListTile<PetState>, 'At Rest'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Save'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Failed to save session'), findsOneWidget);
+      expect(find.byType(PostSessionModal), findsOneWidget);
+    });
+
+    testWidgets('Save with exception shows error message', (tester) async {
+      final prov = TestRespiratoryProvider()..shouldThrowError = true;
+
+      await tester.pumpWidget(_wrapWithProvider(lowBpm, prov));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(RadioListTile<PetState>, 'At Rest'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(ElevatedButton, 'Save'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Error saving session: Exception: Test error'),
+          findsOneWidget);
+      expect(find.byType(PostSessionModal), findsOneWidget);
     });
   });
 }

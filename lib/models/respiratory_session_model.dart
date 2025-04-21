@@ -6,6 +6,7 @@ enum PetState {
 class RespiratorySessionModel {
   int? sessionId;
   final DateTime timeStamp;
+  final int petId;
   final double respiratoryRate;
   final PetState petState; // pet is at rest or sleep at time of monitoring
   final String? notes;
@@ -14,6 +15,7 @@ class RespiratorySessionModel {
   RespiratorySessionModel({
     this.sessionId,
     required this.timeStamp,
+    required this.petId,
     required this.respiratoryRate,
     required this.petState,
     this.notes,
@@ -30,6 +32,7 @@ class RespiratorySessionModel {
   Map<String, dynamic> toMap() {
     return {
       'session_id': sessionId,
+      'pet_id': petId,
       'time_stamp': timeStamp.toIso8601String(),
       'respiratory_rate': respiratoryRate,
       'pet_state': petState.name,
@@ -40,6 +43,7 @@ class RespiratorySessionModel {
   factory RespiratorySessionModel.fromMap(Map<String, dynamic> map) {
     return RespiratorySessionModel(
       sessionId: map['session_id'] as int?,
+      petId: map['pet_id'] as int,
       timeStamp: DateTime.parse(map['time_stamp'] as String),
       respiratoryRate: (map['respiratory_rate'] as num).toDouble(),
       petState: PetState.values.firstWhere(

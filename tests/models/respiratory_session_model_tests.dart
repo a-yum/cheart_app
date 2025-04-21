@@ -8,6 +8,7 @@ void main() {
     test('toMap and fromMap preserve all fields correctly', () {
       final now = DateTime.now();
       final original = RespiratorySessionModel(
+        petId: 1,
         sessionId: 42,
         timeStamp: now,
         respiratoryRate: 18.5,
@@ -20,6 +21,7 @@ void main() {
       final reconstructed = RespiratorySessionModel.fromMap(map);
 
       expect(reconstructed.sessionId, equals(42));
+      expect(reconstructed.petId, equals(1));
       expect(reconstructed.timeStamp.toIso8601String(), equals(now.toIso8601String()));
       expect(reconstructed.respiratoryRate, equals(18.5));
       expect(reconstructed.petState, equals(PetState.sleeping));
@@ -31,6 +33,7 @@ void main() {
     test('toString returns a descriptive string', () {
       final now = DateTime.parse('2025-04-17T12:00:00.000Z');
       final model = RespiratorySessionModel(
+        petId: 3,
         sessionId: 7,
         timeStamp: now,
         respiratoryRate: 22.0,
@@ -41,6 +44,7 @@ void main() {
       final str = model.toString();
 
       expect(str, contains('RespiratorySessionModel'));
+      expect(str, contains('petId: 3'));
       expect(str, contains('id: 7'));
       expect(str, contains('timeStamp: $now'));
       expect(str, contains('respiratoryRate: 22.0'));
@@ -53,6 +57,7 @@ void main() {
     test('handles null sessionId correctly in toMap/fromMap', () {
       final now = DateTime.now();
       final model = RespiratorySessionModel(
+        petId: 47,
         sessionId: null,
         timeStamp: now,
         respiratoryRate: 30.0,

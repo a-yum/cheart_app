@@ -44,6 +44,7 @@ void main() {
     final now = DateTime.now();
     final session = RespiratorySessionModel(
       sessionId: null,
+      petId: 1,
       timeStamp: now,
       respiratoryRate: 22.5,
       petState: PetState.resting,
@@ -58,6 +59,7 @@ void main() {
     expect(sessions.length, 1);
     final fetched = sessions.first;
     expect(fetched.sessionId, equals(id));
+    expect(fetched.petId, equals(1));
     expect(fetched.timeStamp.toIso8601String(), equals(now.toIso8601String()));
     expect(fetched.respiratoryRate, equals(22.5));
     expect(fetched.petState, equals(PetState.resting));
@@ -68,6 +70,7 @@ void main() {
     // Insert two sessions
     final s1 = RespiratorySessionModel(
       sessionId: null,
+      petId: 1,
       timeStamp: DateTime.now(),
       respiratoryRate: 18.0,
       petState: PetState.sleeping,
@@ -76,6 +79,7 @@ void main() {
     );
     final s2 = RespiratorySessionModel(
       sessionId: null,
+      petId: 2,
       timeStamp: DateTime.now().add(const Duration(minutes: 1)),
       respiratoryRate: 45.0,
       petState: PetState.resting,
@@ -101,6 +105,7 @@ void main() {
   test('updateSession modifies existing record', () async {
     final initial = RespiratorySessionModel(
       sessionId: null,
+      petId: 1,
       timeStamp: DateTime.now(),
       respiratoryRate: 20.0,
       petState: PetState.resting,
@@ -111,6 +116,7 @@ void main() {
 
     final updated = RespiratorySessionModel(
       sessionId: id,
+      petId: 2,
       timeStamp: initial.timeStamp,
       respiratoryRate: 30.0,
       petState: PetState.sleeping,
@@ -129,6 +135,7 @@ void main() {
   test('deleteSession removes the record', () async {
     final toDelete = RespiratorySessionModel(
       sessionId: null,
+      petId: 1,
       timeStamp: DateTime.now(),
       respiratoryRate: 25.0,
       petState: PetState.resting,
