@@ -1,25 +1,26 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 
 import 'package:cheart/dao/respiratory_session_dao.dart';
 import 'package:cheart/models/respiratory_session_model.dart';
 import 'package:cheart/utils/respiratory_constants.dart';
-import 'package:flutter/material.dart';
 
 class RespiratoryRateProvider extends ChangeNotifier {
-  late RespiratorySessionDAO _dao;
-
+  RespiratorySessionDAO? _dao;
+  
+  // Session state
   int _breathCount = 0;
   int _timeRemaining = 30;
   bool _isTracking = false;
-
   Timer? _timer;
-
-  VoidCallback? onSessionComplete;
-  VoidCallback? onHighBreathingRate;
-
   int? _finalBreathsPerMinute;
   DateTime? _sessionTimestamp;
 
+  // Callbacks
+  VoidCallback? onSessionComplete;
+  VoidCallback? onHighBreathingRate;
+
+  // Getters
   int get breathCount => _breathCount;
   int get timeRemaining => _timeRemaining;
   bool get isTracking => _isTracking;
@@ -29,34 +30,52 @@ class RespiratoryRateProvider extends ChangeNotifier {
     _dao = dao;
   }
 
+  // Session management
   void startTracking() {
-    _breathCount = 0;
-    _timeRemaining = 30;
+    if (_isTracking) return;
+    
+    _resetSessionValues();
     _isTracking = true;
-
-    _endCurrentession();
+    _startTimer();
     notifyListeners();
   }
 
   void incrementBreathCount() {
-    if (_isTracking) {
-      _breathCount++;
-      notifyListeners();
-    }
+    if (!_isTracking) return;
+    
+    _breathCount++;
+    notifyListeners();
   }
 
   void resetCurrentSession() {
     _timer?.cancel();
-    _breathCount = 0;
-    _timeRemaining = 30;
-    _isTracking = false;
+    _resetSessionValues();
     notifyListeners();
   }
 
-  void _endCurrentession() {
+  void _resetSessionValues() {
+    _breathCount = 0;
+    _timeRemaining = 30;
+    _isTracking = false;
+    _finalBreathsPerMinute = null;
+    _sessionTimestamp = null;
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_timeRemaining <= 0) {
+        _endCurrentSession();
+      } else {
+        _timeRemaining--;
+        notifyListeners();
+      }
+    });
+  }
+
+  void _endCurrentSession() {
     _timer?.cancel();
     _isTracking = false;
-
+    
     _finalBreathsPerMinute = breathsPerMinute;
     _sessionTimestamp = DateTime.now();
 
@@ -66,8 +85,8 @@ class RespiratoryRateProvider extends ChangeNotifier {
   }
 
   void _checkForHighBreathingRate() {
-    if (breathsPerMinute >= 40 && onHighBreathingRate != null) {
-      onHighBreathingRate!();
+    if (breathsPerMinute >= RespiratoryConstants.highBpmThreshold) {
+      onHighBreathingRate?.call();
     }
   }
 
@@ -76,31 +95,44 @@ class RespiratoryRateProvider extends ChangeNotifier {
     required PetState petState,
     String? notes,
   }) async {
+    if (_dao == null) {
+      throw StateError('DAO not initialized');
+    }
+
     if (_sessionTimestamp == null || _finalBreathsPerMinute == null) {
       return false;
     }
 
-    final session = RespiratorySessionModel(
-      sessionId: null,
-      petId: petId,
-      timeStamp: _sessionTimestamp!,
-      respiratoryRate: _finalBreathsPerMinute!.toDouble(),
-      petState: petState,
-      notes: notes,
-      isBreathingRateNormal: _finalBreathsPerMinute! <= RespiratoryConstants.highBpmThreshold,
-    );
-
     try {
-      await _dao.insertSession(session);
+      final session = RespiratorySessionModel(
+        sessionId: null,
+        petId: petId,
+        timeStamp: _sessionTimestamp!,
+        respiratoryRate: _finalBreathsPerMinute!.toDouble(),
+        petState: petState,
+        notes: notes,
+        isBreathingRateNormal: 
+            _finalBreathsPerMinute! <= RespiratoryConstants.highBpmThreshold,
+      );
+
+      await _dao!.insertSession(session);
       return true;
     } catch (e) {
-      return false;
+      print('Error saving respiratory session: $e');
+      rethrow;
     }
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+
+
+    onSessionComplete = null;
+    onHighBreathingRate = null;
+
+    _endCurrentSession();
+    resetCurrentSession();
     super.dispose();
   }
 }

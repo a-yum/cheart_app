@@ -20,9 +20,9 @@ Future<void> main() async {
   final respDao = RespiratorySessionDAO(db);
 
   runApp(
-    MultiProvider(
+    MultiProvider( // toDo: change to constructor injection?
       providers: [
-        // 1) Make your DAOs available
+        // 1) Make DAOs available
         Provider<PetProfileDAO>(create: (_) => petDao),
         Provider<RespiratorySessionDAO>(create: (_) => respDao),
 

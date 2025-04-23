@@ -1,3 +1,4 @@
+import 'package:cheart/models/pet_profile_model.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
@@ -12,12 +13,12 @@ import 'package:cheart/themes/cheart_theme.dart';
 class RespiratoryRateScreen extends StatelessWidget {
   const RespiratoryRateScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    final selectedPet = context.watch<PetProfileProvider>().selectedPetProfile;
-    final respiratoryProvider = context.watch<RespiratoryRateProvider>();
-
-    respiratoryProvider.onSessionComplete ??= () {
+  void _setupSessionCallback(
+    BuildContext context,
+    RespiratoryRateProvider respiratoryProvider,
+    PetProfileModel? selectedPet,
+  ) {
+    respiratoryProvider.onSessionComplete = () {
       if (selectedPet == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No pet selected')),
@@ -25,16 +26,26 @@ class RespiratoryRateScreen extends StatelessWidget {
         return;
       }
 
-      final breathsPerMinute = respiratoryProvider.breathsPerMinute;
-      showDialog(
-        context: context,
-        builder: (_) => PostSessionModal(
-          petName: selectedPet.petName,
-          petId: selectedPet.id ?? -1,
-          breathsPerMinute: breathsPerMinute,
-        ),
-      );
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          builder: (dialogContext) => PostSessionModal(
+            petName: selectedPet.petName,
+            petId: selectedPet.id ?? -1,
+            breathsPerMinute: respiratoryProvider.breathsPerMinute,
+          ),
+        );
+      }
     };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedPet = context.watch<PetProfileProvider>().selectedPetProfile;
+    final respiratoryProvider = context.watch<RespiratoryRateProvider>();
+
+    // Setup the callback when the widget builds
+    _setupSessionCallback(context, respiratoryProvider, selectedPet);
 
     return Scaffold(
       backgroundColor: CHeartTheme.secondaryBackgroundColor,
