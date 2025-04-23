@@ -4,17 +4,72 @@ import 'package:provider/provider.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
-import 'package:cheart/models/pet_profile_model.dart';
-import 'package:cheart/screens/pet_landing_screen.dart';
+
 import 'package:cheart/components/add_pet_modal.dart';
 import 'package:cheart/components/bottom_navbar.dart';
 import 'package:cheart/components/pet_card_list.dart';
+import 'package:cheart/models/pet_profile_model.dart';
 import 'package:cheart/providers/pet_profile_provider.dart';
+import 'package:cheart/screens/pet_landing_screen.dart';
 import 'package:cheart/themes/cheart_theme.dart';
 import 'package:cheart/utils/navigation_helpers.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  Future<void> _handleAddPet(BuildContext context) async {
+    try {
+      final newPet = await showDialog<PetProfileModel>(
+        context: context,
+        builder: (context) => AddPetModal(
+          onSave: (newPet) => Navigator.pop(context, newPet),
+        ),
+      );
+
+      if (!context.mounted) return;
+      if (newPet == null) return;
+
+      final petProvider = Provider.of<PetProfileProvider>(context, listen: false);
+      petProvider.selectPetProfile(newPet);
+
+      if (!context.mounted) return;
+      
+      showTopSnackBar(
+        Overlay.of(context),
+        const CustomSnackBar.success(
+          message: "Pet profile saved successfully!",
+        ),
+      );
+
+      navigateWithFade(
+        context: context,
+        destination: const PetLandingScreen(),
+        replace: true,
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      
+      showTopSnackBar(
+        Overlay.of(context),
+        CustomSnackBar.error(
+          message: "Failed to add pet: ${e.toString()}",
+        ),
+      );
+    }
+  }
+
+  void _handlePetSelected(BuildContext context, String petName) {
+    final petProvider = Provider.of<PetProfileProvider>(context, listen: false);
+    final selectedPet = petProvider.petProfiles.firstWhere(
+      (profile) => profile.petName == petName,
+    );
+    
+    petProvider.selectPetProfile(selectedPet);
+    navigateWithFade(
+      context: context,
+      destination: const PetLandingScreen(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,57 +89,17 @@ class HomeScreen extends StatelessWidget {
                 style: CHeartTheme.sectionTitle,
               ),
               const SizedBox(height: 16),
-
-              // TODO: Replace with DogCardList widget
+              // Pet Card List
               //==========================================
               Consumer<PetProfileProvider>(
                 builder: (context, petProvider, child) {
                   return PetCardList(
                     petNames: petProvider.petNames,
-                    onAddPet: () async {
-                      final newPet = await showDialog<PetProfileModel>(
-                        context: context,
-                        builder: (context) => AddPetModal(
-                          onSave: (newPet) {
-                            Navigator.pop(context, newPet); // Close modal and return pet
-                          },
-                        ),
-                      );
-                      if (!context.mounted) return;
-
-                      if (newPet != null) {
-                        petProvider.addPetProfile(newPet);
-                        petProvider.selectPetProfile(newPet);
-
-                        showTopSnackBar(
-                          Overlay.of(context),
-                          const CustomSnackBar.success(
-                            message: "Pet profile saved successfully!",
-                          ),
-                        );
-                        navigateWithFade(
-                          context: context,
-                          destination: const PetLandingScreen(),
-                          replace: true,
-                        );
-                      }
-                    },
-                    onPetSelected: (petName) {
-                      final selectedPet = petProvider.petProfiles.firstWhere(
-                        (profile) => profile.petName == petName,
-                      );
-                      petProvider.selectPetProfile(selectedPet);
-
-                      navigateWithFade(
-                        context: context,
-                        destination: const PetLandingScreen(),
-                      );
-                    },
+                    onAddPet: () => _handleAddPet(context),
+                    onPetSelected: (petName) => _handlePetSelected(context, petName),
                   );
                 },
               ),
-              //==========================================
-
               const SizedBox(height: 24),
               const Text(
                 'Respiratory Rate Overview',

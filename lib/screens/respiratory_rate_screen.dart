@@ -1,4 +1,3 @@
-import 'package:cheart/models/respiratory_session_model.dart';
 import 'package:flutter/material.dart';
 
 import 'package:provider/provider.dart';
