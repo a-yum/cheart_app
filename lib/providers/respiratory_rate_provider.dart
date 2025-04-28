@@ -30,7 +30,6 @@ class RespiratoryRateProvider extends ChangeNotifier {
     _dao = dao;
   }
 
-  // Session management
   void startTracking() {
     if (_isTracking) return;
     
@@ -126,12 +125,11 @@ class RespiratoryRateProvider extends ChangeNotifier {
   @override
   void dispose() {
     _timer?.cancel();
-
+    _timer = null;
 
     onSessionComplete = null;
     onHighBreathingRate = null;
 
-    _endCurrentSession();
     resetCurrentSession();
     super.dispose();
   }
