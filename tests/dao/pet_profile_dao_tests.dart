@@ -8,7 +8,6 @@ import 'package:cheart/models/pet_profile_model.dart';
 import 'package:cheart/exceptions/data_access_exception.dart';
 
 void main() {
-  // Initialize FFI & point to the ffi factory
   sqfliteFfiInit();
   databaseFactory = databaseFactoryFfi;
 
@@ -16,7 +15,6 @@ void main() {
   late PetProfileDAO dao;
 
   setUp(() async {
-    // Open a fresh in-memory database for each test
     db = await databaseFactory.openDatabase(
       inMemoryDatabasePath,
       options: OpenDatabaseOptions(
@@ -36,8 +34,6 @@ void main() {
         },
       ),
     );
-
-    // Inject it into your DAO
     dao = PetProfileDAO(db);
   });
 
@@ -45,36 +41,39 @@ void main() {
     await db.close();
   });
 
-  // ==================== Test: Save and Retrieve ====================
-  test('savePetProfile inserts and getPetProfiles returns it', () async {
+  // ==================== Test: Insert and Fetch ====================
+  test('insertPetProfile adds a profile, getAllPetProfiles retrieves it', () async {
     final pet = PetProfileModel(
       petName: 'Buddy',
       petBreed: 'Golden Retriever',
       birthMonth: 5,
       birthYear: 2018,
       vetEmail: 'vet@example.com',
+      petImageUrl: 'https://example.com/image.png',
     );
 
-    final id = await dao.savePetProfile(pet);
+    final id = await dao.insertPetProfile(pet);
     expect(id, isNonZero);
 
-    final pets = await dao.getPetProfiles();
-    expect(pets, hasLength(1));
-    expect(pets.first.petName, 'Buddy');
-    expect(pets.first.petBreed, 'Golden Retriever');
+    final pets = await dao.getAllPetProfiles();
+    expect(pets.length, 1);
+    final fetched = pets.first;
+    expect(fetched.petName, 'Buddy');
+    expect(fetched.petBreed, 'Golden Retriever');
+    expect(fetched.vetEmail, 'vet@example.com');
+    expect(fetched.petImageUrl, 'https://example.com/image.png');
   });
 
   // ==================== Test: Exception on Missing Table ====================
-  test('getPetProfiles throws DataAccessException when table missing', () async {
-    // Drop the table to simulate a broken schema
+  test('getAllPetProfiles throws DataAccessException if table is missing', () async {
     await db.execute('DROP TABLE pet_profiles;');
     expect(
-      () => dao.getPetProfiles(),
+      () => dao.getAllPetProfiles(),
       throwsA(isA<DataAccessException>()),
     );
   });
 
-  // ==================== Test: Update Profile ====================
+  // ==================== Test: Update ====================
   test('updatePetProfile updates an existing record', () async {
     final pet = PetProfileModel(
       petName: 'Max',
@@ -82,7 +81,8 @@ void main() {
       birthMonth: 6,
       birthYear: 2019,
     );
-    final id = await dao.savePetProfile(pet);
+
+    final id = await dao.insertPetProfile(pet);
 
     final updated = PetProfileModel(
       id: id,
@@ -90,29 +90,33 @@ void main() {
       petBreed: 'Labrador',
       birthMonth: 6,
       birthYear: 2019,
-      vetEmail: null,
-      petImageUrl: null,
+      vetEmail: 'max@email.com',
+      petImageUrl: 'https://example.com/max.png',
     );
 
     final rowsAffected = await dao.updatePetProfile(updated);
     expect(rowsAffected, 1);
 
-    final pets = await dao.getPetProfiles();
-    expect(pets.first.petName, 'Maximus');
+    final pets = await dao.getAllPetProfiles();
+    final updatedPet = pets.first;
+    expect(updatedPet.petName, 'Maximus');
+    expect(updatedPet.vetEmail, 'max@email.com');
+    expect(updatedPet.petImageUrl, 'https://example.com/max.png');
   });
 
-  // ==================== Test: Delete Profile ====================
+  // ==================== Test: Delete ====================
   test('deletePetProfile removes the record', () async {
     final pet = PetProfileModel(
       petName: 'DeleteMe',
       petBreed: 'TestBreed',
     );
-    final id = await dao.savePetProfile(pet);
+
+    final id = await dao.insertPetProfile(pet);
 
     final rowsDeleted = await dao.deletePetProfile(id.toString());
     expect(rowsDeleted, 1);
 
-    final pets = await dao.getPetProfiles();
+    final pets = await dao.getAllPetProfiles();
     expect(pets, isEmpty);
   });
 }
