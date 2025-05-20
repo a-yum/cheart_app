@@ -1,42 +1,18 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:fake_async/fake_async.dart';
 
-import 'package:cheart/dao/respiratory_session_dao.dart';
 import 'package:cheart/models/respiratory_session_model.dart';
 import 'package:cheart/providers/respiratory_rate_provider.dart';
 import 'package:cheart/utils/respiratory_constants.dart';
 
-
-/// Fake DAO that only implements insertSession, recording its input.
-class FakeSessionDao implements RespiratorySessionDAO {
-  // We don't actually use a real Database here:
-  @override
-  Database get db => throw UnimplementedError();
-
+class FakeSessionDao {
   final List<RespiratorySessionModel> inserted = [];
 
-  @override
   Future<int> insertSession(RespiratorySessionModel session) async {
     inserted.add(session);
     return 1;
   }
-
-  // Unneeded?
-  @override
-  Future<List<RespiratorySessionModel>> getAllSessions() =>
-      throw UnimplementedError();
-
-  @override
-  Future<RespiratorySessionModel?> getSessionById(int id) =>
-      throw UnimplementedError();
-
-  @override
-  Future<int> updateSession(RespiratorySessionModel session) =>
-      throw UnimplementedError();
-
-  @override
-  Future<int> deleteSession(int id) => throw UnimplementedError();
 }
 
 void main() {
@@ -47,7 +23,8 @@ void main() {
     setUp(() {
       provider = RespiratoryRateProvider();
       fakeDao = FakeSessionDao();
-      provider.setDao(fakeDao);
+      // Bypass type system by using `dynamic` if needed
+      provider.setDao(fakeDao as dynamic);
     });
 
     // ==================== Initial State ====================
@@ -58,38 +35,47 @@ void main() {
       expect(provider.breathsPerMinute, 0);
     });
 
-    // ==================== onSessionComplete Callback ====================
-    test('startTracking immediately ends session and fires onSessionComplete', () {
-      var called = false;
-      provider.onSessionComplete = () => called = true;
+    // ==================== Timer + Session Complete ====================
+    test('timer countdown ends session and triggers onSessionComplete', () {
+      FakeAsync().run((fakeAsync) {
+        bool completed = false;
+        provider.onSessionComplete = () => completed = true;
 
-      provider.startTracking();
+        provider.startTracking();
+        expect(provider.isTracking, isTrue);
 
-      expect(called, isTrue);
-      // After ending, tracking is false and BPM still 0
-      expect(provider.isTracking, isFalse);
-      expect(provider.breathsPerMinute, 0);
+        fakeAsync.elapse(const Duration(seconds: 30));
+
+        expect(completed, isTrue);
+        expect(provider.isTracking, isFalse);
+        expect(provider.timeRemaining, 0);
+      });
     });
 
     // ==================== Save Session Persists ====================
     test('saveSession writes correct session to DAO', () async {
-      // simulate end of session
-      provider.startTracking();
-      final state = PetState.sleeping;
+      FakeAsync().run((fakeAsync) async {
+        provider.startTracking();
+        provider.incrementBreathCount(); // simulate 1 breath
+        fakeAsync.elapse(const Duration(seconds: 30)); // session ends
 
-      await provider.saveSession(petId: 1, petState: state);
+        final success = await provider.saveSession(
+          petId: 1,
+          petState: PetState.sleeping,
+          notes: 'test note',
+        );
 
-      // one insertion
-      expect(fakeDao.inserted, hasLength(1));
-      final saved = fakeDao.inserted.first;
+        expect(success, isTrue);
+        expect(fakeDao.inserted.length, 1);
 
-      // payload matches provider state
-      expect(saved.respiratoryRate, provider.breathsPerMinute.toDouble());
-      expect(saved.petState, state);
-      expect(saved.isBreathingRateNormal,
-          provider.breathsPerMinute <= RespiratoryConstants.highBpmThreshold);
-      expect(saved.sessionId, isNull);
-      expect(saved.timeStamp, isNotNull);
+        final session = fakeDao.inserted.first;
+        expect(session.respiratoryRate, 2); // 1 breath * 2
+        expect(session.petState, PetState.sleeping);
+        expect(session.notes, 'test note');
+        expect(session.sessionId, isNull);
+        expect(session.timeStamp, isNotNull);
+        expect(session.isBreathingRateNormal, isTrue);
+      });
     });
   });
 }

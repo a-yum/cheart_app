@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:cheart/dao/respiratory_session_dao.dart';
@@ -7,32 +8,32 @@ import 'package:cheart/utils/respiratory_constants.dart';
 
 class RespiratoryRateProvider extends ChangeNotifier {
   RespiratorySessionDAO? _dao;
-  
-  // Session state
-  int _breathCount = 0;
-  int _timeRemaining = 30;
-  bool _isTracking = false;
-  Timer? _timer;
-  int? _finalBreathsPerMinute;
-  DateTime? _sessionTimestamp;
 
-  // Callbacks
-  VoidCallback? onSessionComplete;
-  VoidCallback? onHighBreathingRate;
+  // === Session State ===
+  int _breathCount = 0;                    // Number of breaths in current session
+  int _timeRemaining = 30;                 // Countdown timer in seconds
+  bool _isTracking = false;                // Whether tracking is in progress
+  Timer? _timer;                           // Internal timer
+  int? _finalBreathsPerMinute;             // Final calculated BPM
+  DateTime? _sessionTimestamp;             // Timestamp of session completion
 
-  // Getters
+  // === Callbacks ===
+  VoidCallback? onSessionComplete;         // Invoked when session ends
+  VoidCallback? onHighBreathingRate;       // Invoked if rate exceeds threshold
+
   int get breathCount => _breathCount;
   int get timeRemaining => _timeRemaining;
   bool get isTracking => _isTracking;
-  int get breathsPerMinute => _breathCount * 2;
+  int get breathsPerMinute => _breathCount * 2; // 30-second count * 2 = BPM
 
+  // Sets the DAO to be used for saving session data
   void setDao(RespiratorySessionDAO dao) {
     _dao = dao;
   }
 
   void startTracking() {
     if (_isTracking) return;
-    
+
     _resetSessionValues();
     _isTracking = true;
     _startTimer();
@@ -41,7 +42,7 @@ class RespiratoryRateProvider extends ChangeNotifier {
 
   void incrementBreathCount() {
     if (!_isTracking) return;
-    
+
     _breathCount++;
     notifyListeners();
   }
@@ -71,10 +72,11 @@ class RespiratoryRateProvider extends ChangeNotifier {
     });
   }
 
+  // Ends the current session, stops timer, evaluates final state
   void _endCurrentSession() {
     _timer?.cancel();
     _isTracking = false;
-    
+
     _finalBreathsPerMinute = breathsPerMinute;
     _sessionTimestamp = DateTime.now();
 
@@ -110,10 +112,9 @@ class RespiratoryRateProvider extends ChangeNotifier {
         respiratoryRate: _finalBreathsPerMinute!.toDouble(),
         petState: petState,
         notes: notes,
-        isBreathingRateNormal: 
+        isBreathingRateNormal:
             _finalBreathsPerMinute! <= RespiratoryConstants.highBpmThreshold,
       );
-
       await _dao!.insertSession(session);
       return true;
     } catch (e) {

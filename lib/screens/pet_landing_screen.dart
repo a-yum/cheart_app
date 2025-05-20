@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+
 import 'package:provider/provider.dart';
+
 import 'package:cheart/providers/pet_profile_provider.dart';
 import 'package:cheart/themes/cheart_theme.dart';
 import 'package:cheart/components/bottom_navbar.dart';
@@ -63,7 +65,7 @@ class PetLandingScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          selectedPet.petBreed,
+                          selectedPet.petBreed ?? '',
                           style: const TextStyle(fontSize: 16),
                         ),
                       ],

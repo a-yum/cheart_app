@@ -1,10 +1,9 @@
-
 class PetProfileModel {
   int? id;
   final String petName;
   final int? birthMonth;
   final int? birthYear;
-  final String petBreed;
+  final String? petBreed;
   String? vetEmail;
   String? petImageUrl;
 
@@ -62,7 +61,7 @@ class PetProfileModel {
       petName: map['pet_name'] as String,
       birthMonth: map['birth_month'] as int?,
       birthYear: map['birth_year'] as int?,
-      petBreed: map['pet_breed'] as String,
+      petBreed: map['pet_breed'] as String?,
       vetEmail: map['vet_email'] as String?,
       petImageUrl: map['pet_image_url'] as String?,
     );

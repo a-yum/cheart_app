@@ -1,3 +1,4 @@
+// Pet's state during a respiratory session.
 enum PetState {
   resting,
   sleeping,
@@ -8,9 +9,9 @@ class RespiratorySessionModel {
   final DateTime timeStamp;
   final int petId;
   final double respiratoryRate;
-  final PetState petState; // pet is at rest or sleep at time of monitoring
-  final String? notes;
-  final bool isBreathingRateNormal; // current threshold is 40 bpm
+  final PetState petState; // Pet is either resting or sleeping during the session
+  final String? notes; // toDo: needed?
+  final bool isBreathingRateNormal; // toDo:threshold? (currently < 40 BPM)
 
   RespiratorySessionModel({
     this.sessionId,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 enum TimeFilter {
-  daily,
+  hourly,
   weekly,
   monthly,
 }
