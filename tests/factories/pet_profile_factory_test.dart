@@ -16,7 +16,7 @@ void main() {
       expect(pet.birthYear, isNull);
       expect(pet.vetEmail, isNull);
       // Default pet image url is an empty string
-      expect(pet.petImageUrl, '');
+      expect(pet.petProfileImagePath, '');
     });
 
     test('should set birthMonth and birthYear when provided', () {
@@ -65,7 +65,7 @@ void main() {
 //       expect(pet.birthYear, isNull);
 //       expect(pet.vetEmail, isNull);
 //       // Default pet image url is an empty string
-//       expect(pet.petImageUrl, '');
+//       expect(pet.petProfileImagePath, '');
 //     });
 
 //     test('should set birthMonth and birthYear when provided', () {

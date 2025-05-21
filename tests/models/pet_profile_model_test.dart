@@ -28,7 +28,7 @@ void main() {
         birthYear: 2020,
         petBreed: 'Beagle',
         vetEmail: 'vet@email.com',
-        petImageUrl: 'assets/dog.png',
+        petProfileImagePath: 'assets/dog.png',
       );
 
       final map = pet.toMap();
@@ -40,7 +40,7 @@ void main() {
       expect(petFromMap.birthMonth, equals(pet.birthMonth));
       expect(petFromMap.birthYear, equals(pet.birthYear));
       expect(petFromMap.vetEmail, equals(pet.vetEmail));
-      expect(petFromMap.petImageUrl, equals(pet.petImageUrl));
+      expect(petFromMap.petProfileImagePath, equals(pet.petProfileImagePath));
     });
   });
 }

@@ -39,7 +39,7 @@ void main() {
         birthMonth: null,
         birthYear: null,
         vetEmail: null,
-        petImageUrl: '',
+        petProfileImagePath: '',
       );
       provider.addPetProfile(newPet);
       expect(provider.petProfiles.length, 2);
@@ -55,7 +55,7 @@ void main() {
         birthMonth: 7,
         birthYear: 2020,
         vetEmail: null,
-        petImageUrl: '',
+        petProfileImagePath: '',
       );
       provider.addPetProfile(newPet);
       provider.selectPetProfile(newPet);
@@ -71,7 +71,7 @@ void main() {
         birthMonth: null,
         birthYear: null,
         vetEmail: null,
-        petImageUrl: '',
+        petProfileImagePath: '',
       );
       provider.addPetProfile(newPet);
       provider.selectPetProfile(newPet);
@@ -88,7 +88,7 @@ void main() {
         birthMonth: null,
         birthYear: null,
         vetEmail: 'vet@example.com',
-        petImageUrl: '',
+        petProfileImagePath: '',
       );
       provider.addPetProfile(newPet);
       provider.selectPetProfile(newPet);
@@ -108,7 +108,7 @@ void main() {
         birthMonth: null,
         birthYear: null,
         vetEmail: null,
-        petImageUrl: '',
+        petProfileImagePath: '',
       );
       provider.addPetProfile(newPet);
 
@@ -119,7 +119,7 @@ void main() {
         birthMonth: null,
         birthYear: null,
         vetEmail: 'updated@example.com',
-        petImageUrl: '',
+        petProfileImagePath: '',
       );
       provider.updatePetProfile(5, updatedPet);
 
@@ -149,7 +149,7 @@ void main() {
         birthMonth: null,
         birthYear: null,
         vetEmail: null,
-        petImageUrl: '',
+        petProfileImagePath: '',
       );
       final provider = PetProfileProvider();
       provider.setDao(FakePetProfileDao([only]));
@@ -167,7 +167,7 @@ void main() {
         birthMonth: null,
         birthYear: null,
         vetEmail: null,
-        petImageUrl: '',
+        petProfileImagePath: '',
       );
       final p2 = PetProfileModel(
         id: 21,
@@ -176,7 +176,7 @@ void main() {
         birthMonth: null,
         birthYear: null,
         vetEmail: null,
-        petImageUrl: '',
+        petProfileImagePath: '',
       );
       final provider = PetProfileProvider();
       provider.setDao(FakePetProfileDao([p1, p2]));
@@ -193,7 +193,7 @@ void main() {
         birthMonth: null,
         birthYear: null,
         vetEmail: null,
-        petImageUrl: '',
+        petProfileImagePath: '',
       );
       final p2 = PetProfileModel(
         id: 31,
@@ -202,7 +202,7 @@ void main() {
         birthMonth: null,
         birthYear: null,
         vetEmail: null,
-        petImageUrl: '',
+        petProfileImagePath: '',
       );
       final provider = PetProfileProvider();
       provider.selectPetProfile(p2);              // pre‐select p2
@@ -220,7 +220,7 @@ void main() {
         birthMonth: null,
         birthYear: null,
         vetEmail: null,
-        petImageUrl: '',
+        petProfileImagePath: '',
       );
       final p2 = PetProfileModel(
         id: 41,
@@ -229,7 +229,7 @@ void main() {
         birthMonth: null,
         birthYear: null,
         vetEmail: null,
-        petImageUrl: '',
+        petProfileImagePath: '',
       );
       final provider = PetProfileProvider();
       provider.selectPetProfile(p2);              // pre‐select p2 (not returned)

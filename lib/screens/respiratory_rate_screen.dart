@@ -10,35 +10,8 @@ import 'package:cheart/providers/pet_profile_provider.dart';
 import 'package:cheart/providers/respiratory_rate_provider.dart';
 import 'package:cheart/themes/cheart_theme.dart';
 
-
 class RespiratoryRateScreen extends StatelessWidget {
   const RespiratoryRateScreen({super.key});
-
-  void _setupSessionCallback(
-    BuildContext context,
-    RespiratoryRateProvider respiratoryProvider,
-    PetProfileModel? selectedPet,
-  ) {
-    respiratoryProvider.onSessionComplete = () {
-      if (selectedPet == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No pet selected')),
-        );
-        return;
-      }
-
-      if (context.mounted) {
-        showDialog(
-          context: context,
-          builder: (dialogContext) => PostSessionModal(
-            petName: selectedPet.petName,
-            petId: selectedPet.id ?? -1,
-            breathsPerMinute: respiratoryProvider.breathsPerMinute,
-          ),
-        );
-      }
-    };
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -246,6 +219,32 @@ class RespiratoryRateScreen extends StatelessWidget {
       ),
       bottomNavigationBar: const BottomNavbar(currentIndex: 0),
     );
+  }
+
+  void _setupSessionCallback(
+    BuildContext context,
+    RespiratoryRateProvider respiratoryProvider,
+    PetProfileModel? selectedPet,
+  ) {
+    respiratoryProvider.onSessionComplete = () {
+      if (selectedPet == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No pet selected')),
+        );
+        return;
+      }
+
+      if (context.mounted) {
+        showDialog(
+          context: context,
+          builder: (dialogContext) => PostSessionModal(
+            petName: selectedPet.petName,
+            petId: selectedPet.id ?? -1,
+            breathsPerMinute: respiratoryProvider.breathsPerMinute,
+          ),
+        );
+      }
+    };
   }
 }
 

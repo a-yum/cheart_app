@@ -60,7 +60,7 @@ class DatabaseHelper {
           birth_month INTEGER,
           birth_year INTEGER,
           vet_email TEXT,
-          pet_image_url TEXT
+          pet_profile_image_path TEXT
         )
       ''');
       await db.execute('''
