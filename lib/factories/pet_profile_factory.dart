@@ -14,7 +14,7 @@ class PetProfileFactory {
       birthMonth: birthMonth,
       birthYear: birthYear,
       vetEmail: vetEmail != null && vetEmail.isEmpty ? null : vetEmail,
-      petImageUrl: '', // ToDo: Update le image
+      petProfileImagePath: '', // ToDo: Update le image
     );
   }
 }

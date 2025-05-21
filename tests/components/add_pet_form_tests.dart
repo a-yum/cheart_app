@@ -114,7 +114,7 @@ void main() {
     expect(savedPet?.vetEmail, equals('vet@example.com'));
     expect(savedPet?.birthMonth, isNull);
     expect(savedPet?.birthYear, isNull);
-    expect(savedPet?.petImageUrl, equals(''));
+    expect(savedPet?.petProfileImagePath, equals(''));
   });
   
   // ==================== Validation Error Test ====================

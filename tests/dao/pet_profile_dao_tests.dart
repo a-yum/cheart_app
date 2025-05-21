@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common/sqlite_api.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 import 'package:cheart/dao/pet_profile_dao.dart';
 import 'package:cheart/models/pet_profile_model.dart';
 import 'package:cheart/exceptions/data_access_exception.dart';
+
 
 void main() {
   sqfliteFfiInit();
@@ -28,7 +28,7 @@ void main() {
               birth_year INTEGER,
               pet_breed TEXT NOT NULL,
               vet_email TEXT,
-              pet_image_url TEXT
+              pet_profile_image_path TEXT
             );
           ''');
         },
@@ -49,7 +49,7 @@ void main() {
       birthMonth: 5,
       birthYear: 2018,
       vetEmail: 'vet@example.com',
-      petImageUrl: 'https://example.com/image.png',
+      petProfileImagePath: 'https://example.com/image.png',
     );
 
     final id = await dao.insertPetProfile(pet);
@@ -61,7 +61,7 @@ void main() {
     expect(fetched.petName, 'Buddy');
     expect(fetched.petBreed, 'Golden Retriever');
     expect(fetched.vetEmail, 'vet@example.com');
-    expect(fetched.petImageUrl, 'https://example.com/image.png');
+    expect(fetched.petProfileImagePath, 'https://example.com/image.png');
   });
 
   // ==================== Test: Exception on Missing Table ====================
@@ -91,7 +91,7 @@ void main() {
       birthMonth: 6,
       birthYear: 2019,
       vetEmail: 'max@email.com',
-      petImageUrl: 'https://example.com/max.png',
+      petProfileImagePath: 'https://example.com/max.png',
     );
 
     final rowsAffected = await dao.updatePetProfile(updated);
@@ -101,7 +101,7 @@ void main() {
     final updatedPet = pets.first;
     expect(updatedPet.petName, 'Maximus');
     expect(updatedPet.vetEmail, 'max@email.com');
-    expect(updatedPet.petImageUrl, 'https://example.com/max.png');
+    expect(updatedPet.petProfileImagePath, 'https://example.com/max.png');
   });
 
   // ==================== Test: Delete ====================
@@ -113,7 +113,7 @@ void main() {
 
     final id = await dao.insertPetProfile(pet);
 
-    final rowsDeleted = await dao.deletePetProfile(id.toString());
+    final rowsDeleted = await dao.deletePetProfile(id);
     expect(rowsDeleted, 1);
 
     final pets = await dao.getAllPetProfiles();

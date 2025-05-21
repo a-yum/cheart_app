@@ -26,10 +26,11 @@ class PetProfileDAO {
     }
   }
 
+  // Load all pet profiles
   Future<List<PetProfileModel>> getAllPetProfiles() async {
     try {
       final maps = await _db.query(_table);
-      return maps.map((m) => PetProfileModel.fromMap(m)).toList();
+      return maps.map(PetProfileModel.fromMap).toList();
     } on DatabaseException catch (e) {
       _logError('getAllPetProfiles', e);
       throw DataAccessException('Failed to load pet profiles', e);
@@ -39,6 +40,7 @@ class PetProfileDAO {
     }
   }
 
+  // Update existing pet profile including image path
   Future<int> updatePetProfile(PetProfileModel pet) async {
     try {
       return await _db.update(
@@ -56,7 +58,7 @@ class PetProfileDAO {
     }
   }
 
-  Future<int> deletePetProfile(String id) async {
+  Future<int> deletePetProfile(int id) async {
     try {
       return await _db.delete(
         _table,

@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Allow access to your camera to take pet photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow access to your photo library to select pet photos.</string>
 </dict>
 </plist>

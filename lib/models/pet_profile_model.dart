@@ -5,7 +5,7 @@ class PetProfileModel {
   final int? birthYear;
   final String? petBreed;
   String? vetEmail;
-  String? petImageUrl;
+  String? petProfileImagePath;
 
   PetProfileModel({
     this.id,
@@ -14,7 +14,7 @@ class PetProfileModel {
     this.birthYear,
     required this.petBreed,
     this.vetEmail,
-    this.petImageUrl,
+    this.petProfileImagePath,
   });
 
   int get petAgeInYears {
@@ -36,7 +36,7 @@ class PetProfileModel {
       'birth_year': birthYear,
       'pet_breed': petBreed,
       'vet_email': vetEmail,
-      'pet_image_url': petImageUrl,
+      'pet_profile_image_path': petProfileImagePath,
     };
   }
 
@@ -63,7 +63,7 @@ class PetProfileModel {
       birthYear: map['birth_year'] as int?,
       petBreed: map['pet_breed'] as String?,
       vetEmail: map['vet_email'] as String?,
-      petImageUrl: map['pet_image_url'] as String?,
+      petProfileImagePath: map['pet_profile_image_path'] as String?,
     );
   }
   
@@ -75,7 +75,7 @@ class PetProfileModel {
     int? birthYear,
     String? petBreed,
     String? vetEmail,
-    String? petImageUrl,
+    String? petProfileImagePath,
   }) {
     return PetProfileModel(
       id: id ?? this.id,
@@ -84,7 +84,7 @@ class PetProfileModel {
       birthYear: birthYear ?? this.birthYear,
       petBreed: petBreed ?? this.petBreed,
       vetEmail: vetEmail ?? this.vetEmail,
-      petImageUrl: petImageUrl ?? this.petImageUrl,
+      petProfileImagePath: petProfileImagePath ?? this.petProfileImagePath,
     );
   }
 
