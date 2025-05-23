@@ -44,7 +44,7 @@ jobs:
           ANDROID_SDK_ROOT: ${{ runner.tool_cache }}/Android/Sdk
 
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: app-debug.apk
           path: build/app/outputs/flutter-apk/app-debug.apk
