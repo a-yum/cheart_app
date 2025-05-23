@@ -9,19 +9,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    # 1) Set the Android SDK root & inject cmdline-tools + platform-tools into PATH
     env:
       ANDROID_SDK_ROOT: $RUNNER_TOOL_CACHE/Android/Sdk
       ANDROID_HOME: $RUNNER_TOOL_CACHE/Android/Sdk
-      PATH: $RUNNER_TOOL_CACHE/Android/Sdk/cmdline-tools/latest/bin:$RUNNER_TOOL_CACHE/Android/Sdk/platform-tools:$PATH
+      PATH: |
+        $ANDROID_SDK_ROOT/cmdline-tools/latest/bin
+        $ANDROID_SDK_ROOT/platform-tools
+        $ANDROID_SDK_ROOT/emulator
+        $PATH
 
     steps:
-      # 2) Checkout your code
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      # 3) Install JDK 17 (needed by the latest Android cmdline-tools)
       - name: Set up Java 17
         uses: actions/setup-java@v3
         with:
@@ -29,39 +28,65 @@ jobs:
           java-version: '17'
           cache: gradle
 
-      # 4) Install Flutter (Stable) and cache SDK & pub deps
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
 
-      # 5) Download & unpack Android SDK command-line tools
       - name: Install Android SDK cmdline-tools
         run: |
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-          curl -fSL https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip \
-            -o cmdline-tools.zip
-          unzip -q cmdline-tools.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
+          curl -fSL https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -o cli.zip
+          unzip -q cli.zip -d "$ANDROID_SDK_ROOT/cmdline-tools"
           mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-          rm cmdline-tools.zip
+          rm cli.zip
 
-      # 6) Accept licenses & install platform-tools, SDK 33, Build-tools 33.0.2
-      - name: Accept licenses & install SDK components
+      - name: Accept licenses & install packages
         run: |
           yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses
           sdkmanager --sdk_root="$ANDROID_SDK_ROOT" \
-            "platform-tools" "platforms;android-33" "build-tools;33.0.2"
+            "platform-tools" "emulator" \
+            "system-images;android-33;google_apis;x86_64" \
+            "platforms;android-33" "build-tools;33.0.2"
 
-      # 7) Get Dart/Flutter packages
-      - name: Pub get
-        run: flutter pub get
+      - name: Create AVD
+        run: |
+          echo "no" | avdmanager create avd \
+            --name testAVD \
+            --package "system-images;android-33;google_apis;x86_64" \
+            --device "pixel" \
+            --force
 
-      # 8) Build the debug APK
-      - name: Build debug APK
-        run: flutter build apk --debug
+      - name: Start emulator and wait for boot
+        run: |
+          nohup emulator -avd testAVD -no-window -no-audio -gpu off &
+          adb wait-for-device
+          for i in {1..30}; do
+            if adb shell getprop sys.boot_completed | grep -q "1"; then
+              echo "Emulator booted in $i attempts"
+              break
+            fi
+            echo "Waiting for emulator to boot… ($i/30)"
+            sleep 2
+          done
 
-      # 9) Upload the APK as an artifact
+      - name: Pub get & build debug APK
+        run: |
+          flutter pub get
+          flutter build apk --debug
+
+      - name: Install & launch on emulator
+        run: |
+          adb install -r build/app/outputs/flutter-apk/app-debug.apk
+          adb shell am start \
+            -n com.yourapp.id/.MainActivity || true
+
+      - name: Kill emulator
+        if: always()
+        run: |
+          adb -s emulator-5554 emu kill || true
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
