@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -14,10 +15,12 @@ import 'package:cheart/config/cheart_routes.dart';
 import 'package:cheart/themes/cheart_theme.dart';
 
 Future<void> main() async {
-  // Initialize FFI for sqflite on desktop (or non-mobile) platforms for emulation/testing.
-  sqfliteFfiInit();
-  databaseFactory = databaseFactoryFfi;
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    sqfliteFfiInit(); // for non-mobile emulating/testing
+    databaseFactory = databaseFactoryFfi;
+  }
 
   final db = await DatabaseHelper().database;
   final petDao = PetProfileDAO(db);
