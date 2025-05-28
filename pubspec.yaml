@@ -39,6 +39,7 @@ dependencies:
   image_cropper: ^9.1.0
   uuid: ^3.0.6
   permission_handler: ^11.3.0
+  flutter_email_sender: ^7.0.0
 
 dev_dependencies:
   flutter_test:
