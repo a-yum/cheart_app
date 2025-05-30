@@ -19,19 +19,24 @@ class PetProfileProvider extends ChangeNotifier {
     ),
   ];
 
-  late PetProfileDAO _dao;
+  late final PetProfileDAO _dao;
   PetProfileModel? _selectedPetProfile;
 
-  List<PetProfileModel> get petProfiles => _petProfiles;
-  PetProfileModel? get selectedPetProfile => _selectedPetProfile;
-  List<String> get petNames =>
-      _petProfiles.map((profile) => profile.petName).toList();
+  // All loaded pet profiles.
+  List<PetProfileModel> get petProfiles => List.unmodifiable(_petProfiles);
 
+  // Currently selected pet profile (may be null).
+  PetProfileModel? get selectedPetProfile => _selectedPetProfile;
+
+  // List of pet names for UI dropdowns.
+  List<String> get petNames => _petProfiles.map((p) => p.petName).toList();
+
+  /// Injects the DAO for database operations.
   void setDao(PetProfileDAO dao) {
     _dao = dao;
   }
 
-  // Load pet profiles from the database, then restore last‐selected from prefs
+  // Loads profiles from the database and restores last selection.
   Future<void> loadPetProfiles() async {
     final profiles = await _dao.getAllPetProfiles();
     _petProfiles
@@ -42,15 +47,12 @@ class PetProfileProvider extends ChangeNotifier {
     final lastId = prefs.getInt(_kLastSelectedKey);
 
     if (_petProfiles.isEmpty) {
-      // 1) No pets → leave selected null
-      _selectedPetProfile = null;
+      _selectedPetProfile = null; // 1) No pets → none selected
     } else if (_petProfiles.length == 1) {
-      // 2) Exactly one pet → auto-select it
-      _selectedPetProfile = _petProfiles.first;
+      _selectedPetProfile = _petProfiles.first; // 2) Single pet → auto-select
     } else {
-      // 3) Multiple pets → try to restore last selected if still valid
-      if (lastId != null &&
-          _petProfiles.any((p) => p.id == lastId)) {
+      // 3) Multiple pets → restore or default
+      if (lastId != null && _petProfiles.any((p) => p.id == lastId)) {
         _selectedPetProfile = _petProfiles.firstWhere((p) => p.id == lastId);
       } else if (_selectedPetProfile == null ||
           !_petProfiles.any((p) => p.id == _selectedPetProfile!.id)) {
@@ -61,7 +63,7 @@ class PetProfileProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Persists via DAO, updates in-memory list, selects and notifies
+  // Persists a new pet, selects it, and remembers choice.
   Future<PetProfileModel> savePetProfile(PetProfileModel pet) async {
     final newId = await _dao.insertPetProfile(pet);
     final saved = pet.copyWith(id: newId);
@@ -69,52 +71,53 @@ class PetProfileProvider extends ChangeNotifier {
     _selectedPetProfile = saved;
     notifyListeners();
 
-    // Remember this pet for next app launch
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_kLastSelectedKey, newId);
-
+    await _persistLastSelected(saved.id!);
     return saved;
   }
 
-  // Adds a pet to memory only (used in dev)
-  void addPetProfile(PetProfileModel petProfile) {
-    _petProfiles.add(petProfile);
-    //selectedPetProfile = petProfile; // Automatically select the new profile
-    notifyListeners();
+  // Updates the vet email on the selected pet.
+  Future<void> updateVetEmail(String newVetEmail) async {
+    final pet = _selectedPetProfile!;
+    pet.vetEmail = newVetEmail; // 1) In-memory
+    await _dao.updatePetProfile(pet); // 2) Persist
+    notifyListeners(); // 3) Refresh UI
   }
 
-  // Update a pet's vet email and notify
-  void updateVetEmail(String? newVetEmail) {
-    if (_selectedPetProfile != null) {
-      _selectedPetProfile!.vetEmail = newVetEmail;
+  // Replaces an existing profile by its ID.
+  void updatePetProfile(int id, PetProfileModel updated) {
+    final idx = _petProfiles.indexWhere((p) => p.id == id);
+    if (idx != -1) {
+      _petProfiles[idx] = updated;
       notifyListeners();
     }
   }
 
-  // Replace an existing pet profile by ID
-  void updatePetProfile(int id, PetProfileModel updatedProfile) {
-    int index = _petProfiles.indexWhere((profile) => profile.id == id);
-    if (index != -1) {
-      _petProfiles[index] = updatedProfile;
-      notifyListeners();
-    }
-  }
-
-  // Selects a pet and remembers that choice in prefs
+  // Selects a pet and remembers that choice.
   Future<void> selectPetProfile(PetProfileModel petProfile) async {
     _selectedPetProfile = petProfile;
     notifyListeners();
-
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_kLastSelectedKey, petProfile.id!);
+    await _persistLastSelected(petProfile.id!);
   }
 
-  // Removes pet from list and clears selection if necessary
+  // Removes a profile and clears selection if it was selected.
   void removePetProfile(PetProfileModel petProfile) {
     _petProfiles.remove(petProfile);
     if (_selectedPetProfile == petProfile) {
       _selectedPetProfile = null;
     }
     notifyListeners();
+  }
+
+  // for dev/testing: adds a profile in memory only
+  void addPetProfile(PetProfileModel petProfile) {
+    _petProfiles.add(petProfile);
+    //selectedPetProfile = petProfile;
+    notifyListeners();
+  }
+
+  // Persists last selected pet ID to shared preferences.
+  Future<void> _persistLastSelected(int id) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kLastSelectedKey, id);
   }
 }

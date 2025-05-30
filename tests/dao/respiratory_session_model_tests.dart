@@ -1,12 +1,13 @@
-import 'package:flutter_test/flutter_test.dart';
+import 'dart:io';
 
+import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:sqflite_common/src/mixin/constant.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 
 import 'package:cheart/dao/respiratory_session_dao.dart';
 import 'package:cheart/models/respiratory_session_model.dart';
-import 'package:cheart/utils/respiratory_constants.dart';
+import 'package:cheart/models/respiratory_stats_summary.dart';
 
 void main() {
   late Database db;
@@ -27,9 +28,11 @@ void main() {
     await db.execute('''
       CREATE TABLE respiratory_sessions(
         session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        pet_id INTEGER NOT NULL,
         time_stamp TEXT NOT NULL,
         respiratory_rate REAL NOT NULL,
         pet_state TEXT NOT NULL,
+        notes TEXT,
         is_breathing_rate_normal INTEGER NOT NULL
       )
     ''');
@@ -60,7 +63,8 @@ void main() {
     final fetched = sessions.first;
     expect(fetched.sessionId, equals(id));
     expect(fetched.petId, equals(1));
-    expect(fetched.timeStamp.toIso8601String(), equals(now.toIso8601String()));
+    expect(fetched.timeStamp.toIso8601String(),
+        equals(now.toIso8601String()));
     expect(fetched.respiratoryRate, equals(22.5));
     expect(fetched.petState, equals(PetState.resting));
     expect(fetched.isBreathingRateNormal, isTrue);
@@ -152,5 +156,83 @@ void main() {
 
     final sessionsAfter = await dao.getAllSessions();
     expect(sessionsAfter, isEmpty);
+  });
+
+  // ==================== Abnormal Count Test ====================
+  test('countAbnormalSessions returns correct number', () async {
+    final now = DateTime.now();
+    // two abnormal, one normal
+    final sessions = [
+      RespiratorySessionModel(
+        sessionId: null,
+        petId: 1,
+        timeStamp: now,
+        respiratoryRate: 30.0,
+        petState: PetState.resting,
+        notes: null,
+        isBreathingRateNormal: false,
+      ),
+      RespiratorySessionModel(
+        sessionId: null,
+        petId: 1,
+        timeStamp: now.add(const Duration(minutes: 1)),
+        respiratoryRate: 25.0,
+        petState: PetState.sleeping,
+        notes: null,
+        isBreathingRateNormal: false,
+      ),
+      RespiratorySessionModel(
+        sessionId: null,
+        petId: 1,
+        timeStamp: now.add(const Duration(minutes: 2)),
+        respiratoryRate: 18.0,
+        petState: PetState.resting,
+        notes: null,
+        isBreathingRateNormal: true,
+      ),
+    ];
+    for (var s in sessions) {
+      await dao.insertSession(s);
+    }
+
+    final count = await dao.countAbnormalSessions(1);
+    expect(count, equals(2));
+  });
+
+  // ==================== Stats Summary Test ====================
+  test('getSessionStatsBetween computes correct avg/min/max', () async {
+    final now = DateTime.now();
+    final s1 = RespiratorySessionModel(
+      sessionId: null,
+      petId: 1,
+      timeStamp: now.subtract(const Duration(minutes: 10)),
+      respiratoryRate: 10.0,
+      petState: PetState.resting,
+      notes: null,
+      isBreathingRateNormal: true,
+    );
+    final s2 = RespiratorySessionModel(
+      sessionId: null,
+      petId: 1,
+      timeStamp: now.subtract(const Duration(minutes: 5)),
+      respiratoryRate: 20.0,
+      petState: PetState.sleeping,
+      notes: null,
+      isBreathingRateNormal: false,
+    );
+    await dao.insertSession(s1);
+    await dao.insertSession(s2);
+
+    final start = now.subtract(const Duration(hours: 1));
+    final end = now;
+    final stats = await dao.getSessionStatsBetween(
+      petId: 1,
+      start: start,
+      end: end,
+    );
+
+    expect(stats.avgBpm, closeTo(15.0, 0.0001));
+    expect(stats.minBpm, equals(10));
+    expect(stats.maxBpm, equals(20));
   });
 }

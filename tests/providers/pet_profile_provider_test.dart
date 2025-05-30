@@ -4,12 +4,17 @@ import 'package:cheart/models/pet_profile_model.dart';
 import 'package:cheart/providers/pet_profile_provider.dart';
 import 'package:cheart/dao/pet_profile_dao.dart';
 
+// Fake DAO that returns a preset list of profiles and
+// fakes out updatePetProfile so updateVetEmail can await it.
 class FakePetProfileDao implements PetProfileDAO {
   FakePetProfileDao(this.profiles);
   final List<PetProfileModel> profiles;
 
   @override
   Future<List<PetProfileModel>> getAllPetProfiles() async => profiles;
+
+  @override
+  Future<int> updatePetProfile(PetProfileModel pet) async => 1;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -22,6 +27,8 @@ void main() {
     // ==================== Setup ====================
     setUp(() {
       provider = PetProfileProvider();
+      // Give the provider a DAO so updateVetEmail can call updatePetProfile
+      provider.setDao(FakePetProfileDao(provider.petProfiles));
     });
 
     // ==================== Initialization ====================
@@ -63,7 +70,7 @@ void main() {
     });
 
     // ==================== Update Vet Email ====================
-    test('updateVetEmail should update email on selected pet', () {
+    test('updateVetEmail should update email on selected pet', () async {
       final newPet = PetProfileModel(
         id: 3,
         petName: 'Max',
@@ -75,7 +82,10 @@ void main() {
       );
       provider.addPetProfile(newPet);
       provider.selectPetProfile(newPet);
-      provider.updateVetEmail('vet@example.com');
+
+      // await the async update
+      await provider.updateVetEmail('vet@example.com');
+
       expect(provider.selectedPetProfile!.vetEmail, 'vet@example.com');
     });
 
