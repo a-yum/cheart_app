@@ -22,6 +22,13 @@ class PetProfileProvider extends ChangeNotifier {
   late final PetProfileDAO _dao;
   PetProfileModel? _selectedPetProfile;
 
+  // Automatically select the first pet if any exist on provider creation.
+  PetProfileProvider() {
+    if (_petProfiles.isNotEmpty) {
+      _selectedPetProfile = _petProfiles.first;
+    }
+  }
+
   // All loaded pet profiles.
   List<PetProfileModel> get petProfiles => List.unmodifiable(_petProfiles);
 
@@ -84,10 +91,13 @@ class PetProfileProvider extends ChangeNotifier {
   }
 
   // Replaces an existing profile by its ID.
-  void updatePetProfile(int id, PetProfileModel updated) {
-    final idx = _petProfiles.indexWhere((p) => p.id == id);
+  Future<void> updatePetProfile(PetProfileModel updated) async {
+    await _dao.updatePetProfile(updated);
+
+    final idx = _petProfiles.indexWhere((p) => p.id == updated.id);
     if (idx != -1) {
       _petProfiles[idx] = updated;
+      _selectedPetProfile = updated;
       notifyListeners();
     }
   }
@@ -99,7 +109,23 @@ class PetProfileProvider extends ChangeNotifier {
     await _persistLastSelected(petProfile.id!);
   }
 
-  // Removes a profile and clears selection if it was selected.
+  // Deletes from db + clears local memory
+  Future<void> deletePetProfile(int id) async {
+    await _dao.deletePetProfile(id);
+
+    _petProfiles.removeWhere((p) => p.id == id);
+
+    // If the deleted pet was selected, clear it
+    if (_selectedPetProfile?.id == id) {
+      _selectedPetProfile = null;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_kLastSelectedKey);
+    }
+
+    notifyListeners();
+  }
+
+  // Removes a profile and clears selection if it was selected. local only
   void removePetProfile(PetProfileModel petProfile) {
     _petProfiles.remove(petProfile);
     if (_selectedPetProfile == petProfile) {

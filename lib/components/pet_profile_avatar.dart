@@ -12,6 +12,10 @@ class PetProfileAvatar extends StatelessWidget {
   final Color? backgroundColor;
   final TextStyle? textStyle;
 
+  // allows editing and responds to tap
+  final bool isEditable;
+  final VoidCallback? onTap;
+
   const PetProfileAvatar({
     Key? key,
     required this.petName,
@@ -19,6 +23,8 @@ class PetProfileAvatar extends StatelessWidget {
     this.size = 80.0,
     this.backgroundColor,
     this.textStyle,
+    this.isEditable = false,
+    this.onTap,
   }) : super(key: key);
 
   // Extract up to two initials from the pet's name
@@ -73,21 +79,48 @@ class PetProfileAvatar extends StatelessWidget {
         ? 'Profile image for $petName'
         : 'No profile image${petName.trim().isNotEmpty ? ', initials ${_getInitials()}' : ''}';
 
+    final avatar = ClipOval(
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: imagePath != null
+            ? Image.file(
+                File(imagePath!),
+                fit: BoxFit.cover,
+                // If loading fails, show initials fallback
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildFallback(context),
+              )
+            : _buildFallback(context),
+      ),
+    );
+
     return Semantics(
       label: semanticsLabel,
-      child: ClipOval(
-        child: SizedBox(
-          width: size,
-          height: size,
-          child: imagePath != null
-              ? Image.file(
-                  File(imagePath!),
-                  fit: BoxFit.cover,
-                  // If loading fails, show initials fallback
-                  errorBuilder: (context, error, stackTrace) =>
-                      _buildFallback(context),
-                )
-              : _buildFallback(context),
+      child: GestureDetector(
+        onTap: isEditable ? onTap : null,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            avatar,
+            if (isEditable)
+              Positioned(
+                bottom: 4,
+                right: 4,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.edit,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
