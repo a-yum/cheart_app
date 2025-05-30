@@ -1,12 +1,12 @@
-// lib/screens/settings_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:cheart/providers/pet_profile_provider.dart';
 import 'package:cheart/components/bottom_navbar.dart';
+import 'package:cheart/components/confirm_discard_dialog.dart';
+import 'package:cheart/components/editable_pet_settings_form.dart';
+import 'package:cheart/components/danger_zone_section.dart';
+import 'package:cheart/providers/pet_profile_provider.dart';
 import 'package:cheart/themes/cheart_theme.dart';
-import 'package:cheart/config/cheart_routes.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,91 +15,68 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final _formKey = GlobalKey<FormState>();
-  late String _email;
+  bool _hasUnsavedChanges = false;
 
-  @override
-  void initState() {
-    super.initState();
-    final pet = context.read<PetProfileProvider>().selectedPetProfile;
-    _email = pet?.vetEmail ?? '';
-  }
+  void _handleChangesMade() => setState(() => _hasUnsavedChanges = true);
+  void _handleSaveComplete() => setState(() => _hasUnsavedChanges = false);
+
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        backgroundColor: CHeartTheme.primaryColor,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              // Vet Email field
-              TextFormField(
-                initialValue: _email,
-                decoration: const InputDecoration(
-                  labelText: 'Vet Email',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
-                validator: (v) {
-                  if (v == null || v.isEmpty) {
-                    return 'Please enter an email';
-                  }
-                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                  if (!emailRegex.hasMatch(v)) {
-                    return 'Invalid email';
-                  }
-                  return null;
-                },
-                onSaved: (v) => _email = v!.trim(),
-              ),
-              const SizedBox(height: 24),
+    final provider = context.watch<PetProfileProvider>();
+    final selectedPet = provider.selectedPetProfile;
+    debugPrint('⚙️ selectedPetProfile = $selectedPet');
 
-              // Save button
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: CHeartTheme.primaryColor,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
+    // Early return fallback
+    if (selectedPet == null) {
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          title: const Text('Settings'),
+          backgroundColor: CHeartTheme.primaryColor,
+        ),
+        body: const Center(child: Text('No pet profile selected.')),
+        bottomNavigationBar: const BottomNavbar(currentIndex: 4),
+      );
+    }
+
+    return PopScope(
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          title: const Text('Settings'),
+          backgroundColor: CHeartTheme.primaryColor,
+        ),
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Editable form
+                Expanded(
+                  child: EditablePetSettingsForm(
+                    pet: selectedPet,
+                    onChangeMade: _handleChangesMade,
+                    onSaved: _handleSaveComplete,
                   ),
                 ),
-                onPressed: () async {
-                  if (!_formKey.currentState!.validate()) return;
-                  _formKey.currentState!.save();
-
-                  try {
-                    // Await the updateVetEmail Future
-                    await context
-                        .read<PetProfileProvider>()
-                        .updateVetEmail(_email);
-
-                    // Only show SnackBar if still mounted
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Vet email saved')),
-                    );
-                  } catch (e) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Save failed: $e')),
-                    );
-                  }
-                },
-                child: const Text('Save'),
-              ),
-            ],
+                const SizedBox(height: 24),
+                // Delete button
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: DangerZoneSection(
+                    pet: selectedPet,
+                    onPetDeleted: () {
+                      Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
+        bottomNavigationBar: const BottomNavbar(currentIndex: 4),
       ),
-
-      // Bottom navigation bar (preserve existing navbar)
-      bottomNavigationBar: const BottomNavbar(currentIndex: 4),
     );
   }
 }

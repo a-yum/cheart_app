@@ -4,8 +4,6 @@ import 'package:cheart/models/pet_profile_model.dart';
 import 'package:cheart/providers/pet_profile_provider.dart';
 import 'package:cheart/dao/pet_profile_dao.dart';
 
-// Fake DAO that returns a preset list of profiles and
-// fakes out updatePetProfile so updateVetEmail can await it.
 class FakePetProfileDao implements PetProfileDAO {
   FakePetProfileDao(this.profiles);
   final List<PetProfileModel> profiles;
@@ -14,7 +12,22 @@ class FakePetProfileDao implements PetProfileDAO {
   Future<List<PetProfileModel>> getAllPetProfiles() async => profiles;
 
   @override
-  Future<int> updatePetProfile(PetProfileModel pet) async => 1;
+  Future<int> insertPetProfile(PetProfileModel pet) async {
+    // Simulate database auto‐assigning an ID
+    return pet.id ?? 0;
+  }
+
+  @override
+  Future<int> updatePetProfile(PetProfileModel pet) async {
+    // Simulate a successful update returning number of rows affected
+    return 1;
+  }
+
+  @override
+  Future<int> deletePetProfile(int id) async {
+    // Simulate a successful deletion returning number of rows affected
+    return 1;
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -27,7 +40,7 @@ void main() {
     // ==================== Setup ====================
     setUp(() {
       provider = PetProfileProvider();
-      // Give the provider a DAO so updateVetEmail can call updatePetProfile
+      // Auto‐select constructor should have picked the default test pet
       provider.setDao(FakePetProfileDao(provider.petProfiles));
     });
 
@@ -35,6 +48,10 @@ void main() {
     test('should start with one default profile', () {
       expect(provider.petProfiles.length, 1);
       expect(provider.petProfiles.first.petName, 'test');
+    });
+
+    test('auto-selects the first profile on creation', () {
+      expect(provider.selectedPetProfile, provider.petProfiles.first);
     });
 
     // ==================== Add Pet ====================
@@ -54,7 +71,7 @@ void main() {
     });
 
     // ==================== Select Pet ====================
-    test('selectPetProfile should update selectedPetProfile', () {
+    test('selectPetProfile should update selectedPetProfile', () async {
       final newPet = PetProfileModel(
         id: 2,
         petName: 'Luna',
@@ -65,7 +82,7 @@ void main() {
         petProfileImagePath: '',
       );
       provider.addPetProfile(newPet);
-      provider.selectPetProfile(newPet);
+      await provider.selectPetProfile(newPet);
       expect(provider.selectedPetProfile, equals(newPet));
     });
 
@@ -81,11 +98,9 @@ void main() {
         petProfileImagePath: '',
       );
       provider.addPetProfile(newPet);
-      provider.selectPetProfile(newPet);
+      await provider.selectPetProfile(newPet);
 
-      // await the async update
       await provider.updateVetEmail('vet@example.com');
-
       expect(provider.selectedPetProfile!.vetEmail, 'vet@example.com');
     });
 
@@ -110,7 +125,7 @@ void main() {
     });
 
     // ==================== Update Pet ====================
-    test('updatePetProfile should update the given profile by id', () {
+    test('updatePetProfile should update the given profile by id', () async {
       final newPet = PetProfileModel(
         id: 5,
         petName: 'Charlie',
@@ -122,26 +137,29 @@ void main() {
       );
       provider.addPetProfile(newPet);
 
-      final updatedPet = PetProfileModel(
-        id: 5,
-        petName: 'Charlie',
+      final updatedPet = newPet.copyWith(
         petBreed: 'Beagle Mix',
-        birthMonth: null,
-        birthYear: null,
         vetEmail: 'updated@example.com',
-        petProfileImagePath: '',
       );
-      provider.updatePetProfile(5, updatedPet);
+      await provider.updatePetProfile(updatedPet);
 
       final petFromProvider =
           provider.petProfiles.firstWhere((p) => p.id == 5);
       expect(petFromProvider.petBreed, 'Beagle Mix');
       expect(petFromProvider.vetEmail, 'updated@example.com');
     });
+
+    // ==================== Delete Pet ====================
+    test('deletePetProfile should remove and clear selection when last removed', () async {
+      // Initial in-memory has one test pet
+      final id = provider.petProfiles.first.id!;
+      await provider.deletePetProfile(id);
+      expect(provider.petProfiles, isEmpty);
+      expect(provider.selectedPetProfile, isNull);
+    });
   });
 
   group('PetProfileProvider.loadPetProfiles', () {
-    // ==================== Empty DAO ====================
     test('empty list from DAO → petProfiles empty & selected null', () async {
       final provider = PetProfileProvider();
       provider.setDao(FakePetProfileDao([]));
@@ -150,7 +168,6 @@ void main() {
       expect(provider.selectedPetProfile, isNull);
     });
 
-    // ==================== Single Profile ====================
     test('single profile from DAO → auto-select it', () async {
       final only = PetProfileModel(
         id: 10,
@@ -168,7 +185,6 @@ void main() {
       expect(provider.selectedPetProfile, only);
     });
 
-    // ==================== Multiple, No Prior Selection ====================
     test('multiple profiles & no prior selection → selects first', () async {
       final p1 = PetProfileModel(
         id: 20,
@@ -194,7 +210,6 @@ void main() {
       expect(provider.selectedPetProfile, p1);
     });
 
-    // ==================== Multiple, Prior Selection Present ====================
     test('multiple profiles & prior selection still present → preserves it', () async {
       final p1 = PetProfileModel(
         id: 30,
@@ -215,13 +230,12 @@ void main() {
         petProfileImagePath: '',
       );
       final provider = PetProfileProvider();
-      provider.selectPetProfile(p2);              // pre‐select p2
+      await provider.selectPetProfile(p2); // pre-select p2
       provider.setDao(FakePetProfileDao([p1, p2]));
       await provider.loadPetProfiles();
       expect(provider.selectedPetProfile, p2);
     });
 
-    // ==================== Multiple, Prior Selection Gone ====================
     test('multiple profiles & prior selection gone → falls back to first', () async {
       final p1 = PetProfileModel(
         id: 40,
@@ -242,7 +256,7 @@ void main() {
         petProfileImagePath: '',
       );
       final provider = PetProfileProvider();
-      provider.selectPetProfile(p2);              // pre‐select p2 (not returned)
+      await provider.selectPetProfile(p2); // pre-select p2 (not returned)
       provider.setDao(FakePetProfileDao([p1]));
       await provider.loadPetProfiles();
       expect(provider.selectedPetProfile, p1);
