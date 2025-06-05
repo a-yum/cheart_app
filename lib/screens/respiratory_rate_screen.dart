@@ -217,7 +217,7 @@ class RespiratoryRateScreen extends StatelessWidget {
           );
         },
       ),
-      bottomNavigationBar: const BottomNavbar(currentIndex: 0),
+      bottomNavigationBar: const BottomNavbar(currentIndex: 2),
     );
   }
 
