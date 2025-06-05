@@ -3,10 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:cheart/dao/respiratory_session_dao.dart';
 import 'package:cheart/exceptions/data_access_exception.dart';
 import 'package:cheart/models/graph_models.dart';
+import 'package:cheart/models/pet_overview_data.dart';
 import 'package:cheart/screens/graph_screen_constants.dart';
 
 class RespiratoryHistoryProvider extends ChangeNotifier {
-  // DAO for database access and high-BPM threshold
+  // DAO for database access and high‐BPM threshold
   final RespiratorySessionDAO _dao;
   final int _highThreshold;
 
@@ -29,12 +30,54 @@ class RespiratoryHistoryProvider extends ChangeNotifier {
   int? minBpm;
   int? maxBpm;
 
+  // Holds overview info (count + most recent data) for each petId.
+  final Map<int, PetOverviewData> overviewMap = {};
+
+  // If loading a specific pet’s overview fails, store the error message here.
+  final Map<int, String> overviewErrors = {};
+
   RespiratoryHistoryProvider({
     required this.petId,
     required RespiratorySessionDAO dao,
     required int highThreshold,
   })  : _dao = dao,
         _highThreshold = highThreshold;
+
+  // Loads “today’s session count” + “most recent BPM/timestamp” for each ID.
+  Future<void> loadOverviewForPets(List<int> petIds) async {
+    for (final id in petIds) {
+      try {
+        // 1) Count how many sessions this pet had today
+        final count = await _dao.getSessionCountForToday(id);
+
+        // 2) Fetch the most recent session (if any)
+        final latest = await _dao.getLatestSession(id);
+        final bpm = latest?.respiratoryRate.toDouble();
+        final ts = latest?.timeStamp;
+
+        // 3) Build and store the PetOverviewData
+        overviewMap[id] = PetOverviewData(
+          sessionCountToday: count,
+          mostRecentBpm: bpm,
+          mostRecentTimestamp: ts,
+        );
+
+        // 4) Clear any previous error for this pet
+        overviewErrors.remove(id);
+      } catch (e) {
+        // On error, store default data and record the error message
+        overviewMap[id] = const PetOverviewData(
+          sessionCountToday: 0,
+          mostRecentBpm: null,
+          mostRecentTimestamp: null,
+        );
+        overviewErrors[id] = e.toString();
+      }
+
+      // Notify after each pet so cards appear incrementally
+      notifyListeners();
+    }
+  }
 
   // called when the selected pet changes or after adding a new session
   Future<void> updatePet(int newPetId) async {
@@ -58,6 +101,9 @@ class RespiratoryHistoryProvider extends ChangeNotifier {
     try {
       // check if any sessions exist for this pet
       hasSessions = await _dao.hasSessions(petId);
+
+      await loadOverviewForPets([petId]);
+
       if (!hasSessions) {
         // clear previous data if none
         hourlyPoints = [];
@@ -135,5 +181,6 @@ class RespiratoryHistoryProvider extends ChangeNotifier {
   // call this after adding a new session to refresh all data
   Future<void> onSessionAdded() async {
     await updatePet(petId);
+    await loadOverviewForPets([petId]);
   }
 }

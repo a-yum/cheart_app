@@ -34,11 +34,10 @@ class PetCardList extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 5),
-          itemCount:
-              petNames.isEmpty ? 1 : petNames.length + 1, // +1 for add button
+          itemCount: petNames.isEmpty ? 1 : petNames.length + 1, // +1 for add button
           itemBuilder: (context, index) {
-            // Add button is always the last item
-            if (index == (petNames.isEmpty ? 0 : petNames.length)) {
+            // Add button should always be the first item (index == 0)
+            if (index == 0) {
               return GestureDetector(
                 onTap: () async {
                   await onAddPet();
@@ -80,9 +79,11 @@ class PetCardList extends StatelessWidget {
               );
             }
 
-            // Pet Card
+            // Pet Card: Offset index by 1 for petNames since the first item is the add button
+            final petIndex = index - 1;
+
             return InkWell(
-              onTap: () => onPetSelected(petNames[index]),
+              onTap: () => onPetSelected(petNames[petIndex]),
               child: Container(
                 width: 100,
                 margin: const EdgeInsets.all(10),
@@ -93,7 +94,7 @@ class PetCardList extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    petNames[index],
+                    petNames[petIndex],
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

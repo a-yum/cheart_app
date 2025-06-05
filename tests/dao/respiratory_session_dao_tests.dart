@@ -235,4 +235,66 @@ void main() {
     expect(stats.minBpm, equals(10));
     expect(stats.maxBpm, equals(20));
   });
+
+  // ==================== getSessionCountForToday Tests ====================
+  test('getSessionCountForToday returns correct count', () async {
+    final now = DateTime.now();
+
+    // Session that should be counted (today)
+    final todaySession1 = RespiratorySessionModel(
+      sessionId: null,
+      petId: 1,
+      timeStamp: now,
+      respiratoryRate: 18.0,
+      petState: PetState.resting,
+      notes: null,
+      isBreathingRateNormal: true,
+    );
+    // Another session today
+    final todaySession2 = RespiratorySessionModel(
+      sessionId: null,
+      petId: 1,
+      timeStamp: now.add(const Duration(minutes: 5)),
+      respiratoryRate: 22.0,
+      petState: PetState.sleeping,
+      notes: null,
+      isBreathingRateNormal: false,
+    );
+    // Session from yesterday (should NOT be counted)
+    final yesterdaySession = RespiratorySessionModel(
+      sessionId: null,
+      petId: 1,
+      timeStamp: now.subtract(const Duration(days: 1)),
+      respiratoryRate: 15.0,
+      petState: PetState.resting,
+      notes: null,
+      isBreathingRateNormal: true,
+    );
+
+    await dao.insertSession(todaySession1);
+    await dao.insertSession(todaySession2);
+    await dao.insertSession(yesterdaySession);
+
+    final count = await dao.getSessionCountForToday(1);
+    expect(count, equals(2));
+  });
+
+  test('getSessionCountForToday returns zero when no sessions today', () async {
+    final now = DateTime.now();
+
+    // Only insert a session from yesterday
+    final yesterdaySession = RespiratorySessionModel(
+      sessionId: null,
+      petId: 2,
+      timeStamp: now.subtract(const Duration(days: 1)),
+      respiratoryRate: 20.0,
+      petState: PetState.resting,
+      notes: null,
+      isBreathingRateNormal: true,
+    );
+    await dao.insertSession(yesterdaySession);
+
+    final count = await dao.getSessionCountForToday(2);
+    expect(count, equals(0));
+  });
 }
