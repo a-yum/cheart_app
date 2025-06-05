@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 
 import 'package:cheart/providers/pet_profile_provider.dart';
 import 'package:cheart/themes/cheart_theme.dart';
-import 'package:cheart/components/bottom_navbar.dart';
-import 'package:cheart/components/pet_profile_avatar.dart';
+import 'package:cheart/components/common/bottom_navbar.dart';
+import 'package:cheart/components/pet_profile/pet_profile_avatar.dart';
 import 'package:cheart/screens/graph_screen.dart';
 import 'package:cheart/screens/respiratory_rate_screen.dart';
 

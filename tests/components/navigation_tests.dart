@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
 import 'package:cheart/main.dart';
-import 'package:cheart/components/bottom_navbar.dart';
+import 'package:cheart/components/common/bottom_navbar.dart';
 import 'package:cheart/providers/pet_profile_provider.dart';
 
 

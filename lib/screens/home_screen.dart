@@ -5,9 +5,9 @@ import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 
-import 'package:cheart/components/add_pet_modal.dart';
-import 'package:cheart/components/bottom_navbar.dart';
-import 'package:cheart/components/pet_card_list.dart';
+import 'package:cheart/components/dialogs/add_pet_modal.dart';
+import 'package:cheart/components/common/bottom_navbar.dart';
+import 'package:cheart/components/pet_profile/pet_card_list.dart';
 import 'package:cheart/models/pet_profile_model.dart';
 import 'package:cheart/providers/pet_profile_provider.dart';
 import 'package:cheart/screens/pet_landing_screen.dart';

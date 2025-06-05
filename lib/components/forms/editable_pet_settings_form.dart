@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
-import 'package:cheart/components/pet_profile_avatar.dart';
-import 'package:cheart/components/month_year_picker_dialog.dart';
+import 'package:cheart/components/pet_profile/pet_profile_avatar.dart';
+import 'package:cheart/components/dialogs/month_year_picker_dialog.dart';
 import 'package:cheart/controllers/pet_form_controller.dart';
 import 'package:cheart/exceptions/image_handler_exception.dart';
 import 'package:cheart/models/pet_profile_model.dart';

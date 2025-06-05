@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:cheart/models/pet_profile_model.dart';
-import 'package:cheart/components/bottom_navbar.dart';
-import 'package:cheart/components/info_modal.dart';
-import 'package:cheart/components/post_session_modal.dart';
+import 'package:cheart/components/common/bottom_navbar.dart';
+import 'package:cheart/components/common/info_modal.dart';
+import 'package:cheart/components/session/post_session_modal.dart';
 import 'package:cheart/providers/pet_profile_provider.dart';
 import 'package:cheart/providers/respiratory_rate_provider.dart';
 import 'package:cheart/themes/cheart_theme.dart';
