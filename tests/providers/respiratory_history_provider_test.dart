@@ -60,6 +60,15 @@ class FakeRespiratorySessionDAO extends RespiratorySessionDAO {
       getSessionsForToday(petId);
 
   @override
+  Future<RespiratorySessionModel?> getLatestSession(int petId) async {
+    // Return the session with the highest respiratoryRate from getSessionsForToday
+    final sessions = await getSessionsForToday(petId);
+    if (sessions.isEmpty) return null;
+    sessions.sort((a, b) => b.respiratoryRate.compareTo(a.respiratoryRate));
+    return sessions.first;
+  }
+
+  @override
   Future<RespiratoryStatsSummary> getSessionStatsBetween({
     required int petId,
     required DateTime start,
@@ -108,6 +117,29 @@ class FakeRespiratorySessionDAO extends RespiratorySessionDAO {
         highPct: 0.0,
       );
     });
+  }
+}
+
+class EmptyOverviewDAO extends FakeRespiratorySessionDAO {
+  EmptyOverviewDAO(Database db) : super(db);
+
+  @override
+  Future<List<RespiratorySessionModel>> getSessionsForToday(int petId) async {
+    return <RespiratorySessionModel>[];
+  }
+
+  @override
+  Future<RespiratorySessionModel?> getLatestSession(int petId) async {
+    return null;
+  }
+}
+
+class ThrowingCountDAO extends FakeRespiratorySessionDAO {
+  ThrowingCountDAO(Database db) : super(db);
+
+  @override
+  Future<int> getSessionCountForToday(int petId) async {
+    throw Exception('Forced count failure');
   }
 }
 
@@ -174,6 +206,58 @@ void main() {
         () => provider.updatePet(1),
         throwsA(isA<DataAccessException>()),
       );
+    });
+
+    // ==================== loadOverviewForPets populates overviewMap correctly ====================
+    test('loadOverviewForPets populates overviewMap with correct data', () async {
+      await provider.loadOverviewForPets([1]);
+
+      final overview = provider.overviewMap[1];
+      expect(overview, isNotNull);
+      expect(overview!.sessionCountToday, equals(2));
+      expect(overview.mostRecentBpm, equals(20.0));
+      expect(overview.mostRecentTimestamp, isNotNull);
+      expect(provider.overviewErrors.containsKey(1), isFalse);
+    });
+
+    // ==================== loadOverviewForPets handles missing data gracefully ====================
+    test('loadOverviewForPets handles missing sessions (empty DAO)', () async {
+      final db = await databaseFactory.openDatabase(inMemoryDatabasePath);
+      final emptyDao = EmptyOverviewDAO(db);
+      final localProvider = RespiratoryHistoryProvider(
+        petId: 2,
+        dao: emptyDao,
+        highThreshold: 100,
+      );
+
+      await localProvider.loadOverviewForPets([2]);
+
+      final overview = localProvider.overviewMap[2];
+      expect(overview, isNotNull);
+      expect(overview!.sessionCountToday, equals(0));
+      expect(overview.mostRecentBpm, isNull);
+      expect(overview.mostRecentTimestamp, isNull);
+      expect(localProvider.overviewErrors.containsKey(2), isFalse);
+    });
+
+    // ==================== loadOverviewForPets records error and placeholder on DAO exception ====================
+    test('loadOverviewForPets records error on DAO exception', () async {
+      final db = await databaseFactory.openDatabase(inMemoryDatabasePath);
+      final throwingDao = ThrowingCountDAO(db);
+      final errorProvider = RespiratoryHistoryProvider(
+        petId: 3,
+        dao: throwingDao,
+        highThreshold: 100,
+      );
+
+      await errorProvider.loadOverviewForPets([3]);
+
+      final overview = errorProvider.overviewMap[3];
+      expect(overview, isNotNull);
+      expect(overview!.sessionCountToday, equals(0));
+      expect(overview.mostRecentBpm, isNull);
+      expect(overview.mostRecentTimestamp, isNull);
+      expect(errorProvider.overviewErrors.containsKey(3), isTrue);
     });
   });
 }

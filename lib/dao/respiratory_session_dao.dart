@@ -331,6 +331,38 @@ class RespiratorySessionDAO {
     );
   }
 
+// Returns the number of sessions for [petId] that occurred “today.”
+Future<int> getSessionCountForToday(int petId) {
+  return _wrap(
+    'Failed to count today\'s sessions for pet $petId',
+    () async {
+      final now = DateTime.now();
+      // Start of today (midnight)
+      final startOfDay = DateTime(now.year, now.month, now.day);
+      // Start of tomorrow (midnight next day)
+      final startOfTomorrow = startOfDay.add(const Duration(days: 1));
+
+      // COUNT(*) WHERE pet_id = ? AND time_stamp >= startOfDay AND time_stamp < startOfTomorrow
+      final rows = await db.rawQuery(
+        'SELECT COUNT(*) AS cnt '
+        'FROM $_table '
+        'WHERE pet_id = ? AND time_stamp >= ? AND time_stamp < ?',
+        [
+          petId,
+          startOfDay.toIso8601String(),
+          startOfTomorrow.toIso8601String(),
+        ],
+      );
+
+      final cnt = rows.first['cnt'];
+      if (cnt is int) return cnt;
+      if (cnt is num) return cnt.toInt();
+      return 0;
+    },
+  );
+}
+
+
   // Generic DB wrapper for error handling
   Future<T> _wrap<T>(String description, Future<T> Function() operation) async {
     try {
