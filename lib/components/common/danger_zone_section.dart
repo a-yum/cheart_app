@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'package:cheart/models/pet_profile_model.dart';
 import 'package:cheart/providers/pet_profile_provider.dart';
-import 'package:cheart/components/confirm_discard_dialog.dart';
+import 'package:cheart/components/dialogs/confirm_discard_dialog.dart';
 
 class DangerZoneSection extends StatelessWidget {
   final PetProfileModel pet;

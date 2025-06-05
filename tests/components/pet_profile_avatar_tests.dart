@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:cheart/components/pet_profile_avatar.dart';
+import 'package:cheart/components/pet_profile/pet_profile_avatar.dart';
 
 void main() {
   group('PetProfileAvatar Widget Tests', () {

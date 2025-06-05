@@ -3,10 +3,10 @@ import 'package:flutter_email_sender/flutter_email_sender.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import 'package:cheart/components/bar_graph.dart';
-import 'package:cheart/components/bottom_navbar.dart';
-import 'package:cheart/components/line_graph.dart';
-import 'package:cheart/components/stat_card.dart';
+import 'package:cheart/components/common/bar_graph.dart';
+import 'package:cheart/components/common/bottom_navbar.dart';
+import 'package:cheart/components/common/line_graph.dart';
+import 'package:cheart/components/common/stat_card.dart';
 import 'package:cheart/models/pet_profile_model.dart';
 import 'package:cheart/providers/pet_profile_provider.dart';
 import 'package:cheart/providers/respiratory_history_provider.dart';

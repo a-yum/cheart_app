@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:cheart/components/month_year_picker_dialog.dart';
+import 'package:cheart/components/dialogs/month_year_picker_dialog.dart';
 
 void main() {
   group('MonthYearPickerDialog', () {

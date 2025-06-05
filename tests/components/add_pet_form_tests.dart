@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 
 import 'package:cheart/models/pet_profile_model.dart';
-import 'package:cheart/components/add_pet_form.dart';
+import 'package:cheart/components/forms/add_pet_form.dart';
 import 'package:cheart/dao/pet_profile_dao.dart';
 import 'package:cheart/providers/pet_profile_provider.dart';
 

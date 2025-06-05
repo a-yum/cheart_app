@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:cheart/models/pet_profile_model.dart';
-import 'package:cheart/components/add_pet_form.dart';
+import 'package:cheart/components/forms/add_pet_form.dart';
 
 class AddPetModal extends StatelessWidget {
   final Function(PetProfileModel) onSave;

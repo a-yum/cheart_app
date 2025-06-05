@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:cheart/components/bottom_navbar.dart';
-import 'package:cheart/components/confirm_discard_dialog.dart';
-import 'package:cheart/components/editable_pet_settings_form.dart';
-import 'package:cheart/components/danger_zone_section.dart';
+import 'package:cheart/components/common/bottom_navbar.dart';
+import 'package:cheart/components/dialogs/confirm_discard_dialog.dart';
+import 'package:cheart/components/forms/editable_pet_settings_form.dart';
+import 'package:cheart/components/common/danger_zone_section.dart';
 import 'package:cheart/providers/pet_profile_provider.dart';
 import 'package:cheart/themes/cheart_theme.dart';
 
