@@ -7,7 +7,7 @@ import 'package:cheart/components/common/bottom_navbar.dart';
 import 'package:cheart/components/common/info_modal.dart';
 import 'package:cheart/components/session/post_session_modal.dart';
 import 'package:cheart/providers/pet_profile_provider.dart';
-import 'package:cheart/providers/respiratory_rate_provider.dart';
+import 'package:cheart/providers/respiratory_session_provider.dart';
 import 'package:cheart/themes/cheart_theme.dart';
 
 class RespiratoryRateScreen extends StatelessWidget {

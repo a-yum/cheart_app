@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:cheart/models/respiratory_session_model.dart';
-import 'package:cheart/providers/respiratory_rate_provider.dart';
+import 'package:cheart/providers/respiratory_session_provider.dart';
 import 'package:cheart/utils/respiratory_constants.dart';
 
 class PostSessionModal extends StatefulWidget {
