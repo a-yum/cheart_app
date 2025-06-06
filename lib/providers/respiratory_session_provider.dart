@@ -6,6 +6,8 @@ import 'package:cheart/dao/respiratory_session_dao.dart';
 import 'package:cheart/models/respiratory_session_model.dart';
 import 'package:cheart/utils/respiratory_constants.dart';
 
+// Raw sessions
+
 class RespiratoryRateProvider extends ChangeNotifier {
   RespiratorySessionDAO? _dao;
 

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'package:cheart/components/session/post_session_modal.dart';
 import 'package:cheart/models/respiratory_session_model.dart';
-import 'package:cheart/providers/respiratory_rate_provider.dart';
+import 'package:cheart/providers/respiratory_session_provider.dart';
 import 'package:cheart/utils/respiratory_constants.dart';
 
 class TestRespiratoryProvider extends RespiratoryRateProvider {

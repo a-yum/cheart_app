@@ -9,8 +9,9 @@ import 'package:cheart/database/database_helper.dart';
 import 'package:cheart/dao/pet_profile_dao.dart';
 import 'package:cheart/dao/respiratory_session_dao.dart';
 import 'package:cheart/providers/pet_profile_provider.dart';
-import 'package:cheart/providers/respiratory_rate_provider.dart';
+import 'package:cheart/providers/respiratory_session_provider.dart';
 import 'package:cheart/providers/respiratory_history_provider.dart';
+import 'package:cheart/providers/pet_landing_provider.dart';
 import 'package:cheart/services/csv_export_service.dart';
 import 'package:cheart/services/xml_export_service.dart';
 import 'package:cheart/themes/cheart_theme.dart';
@@ -67,16 +68,38 @@ Future<void> main() async {
         // Reloads respiratory history data whenever the selected pet changes (and is non-null).
         ChangeNotifierProxyProvider2<PetProfileProvider, RespiratorySessionDAO, RespiratoryHistoryProvider>(
           create: (context) => RespiratoryHistoryProvider(
-            petId: 0, // Initial dummy pet ID, real value is set during the update phase
+            petId: 0, // Initial dummy pet ID; real value is set during update
             dao: context.read<RespiratorySessionDAO>(), // Inject DAO into provider
             highThreshold: RespiratoryConstants.highBpmThreshold, // Set high BPM threshold for alerts
           ),
           update: (_, petProv, dao, historyProv) {
-            final newId = petProv.selectedPetProfile?.id;
-            if (newId != null) {
-              historyProv!.updatePet(newId); // Update respiratory history when a new pet is selected
+            final selectedPet = petProv.selectedPetProfile;
+            if (selectedPet != null && selectedPet.id != null) {
+              historyProv!.updatePet(selectedPet.id!); // Use non-nullable id
             }
-            return historyProv!; // Return the updated provider
+            return historyProv!;
+          },
+        ),
+
+        // PetLandingProvider supplies “Most Recent”, “Today’s Avg + Δ”, and “Current Streak”
+        // Depends on:
+        // - PetProfileProvider (to know which pet is selected)
+        // - RespiratorySessionDAO (for raw session queries)
+        // Reloads landing‐screen stats whenever the selected pet changes (and is non-null).
+        ChangeNotifierProxyProvider2<PetProfileProvider, RespiratorySessionDAO, PetLandingProvider>(
+          create: (context) {
+            // Create with dummy petId; will be overridden in update().
+            final dao = context.read<RespiratorySessionDAO>();
+            return PetLandingProvider(sessionDao: dao, petId: 0);
+          },
+          update: (_, petProv, dao, landingProv) {
+            final selectedPet = petProv.selectedPetProfile;
+            if (selectedPet != null && selectedPet.id != null) {
+              final id = selectedPet.id!;
+              landingProv!..petId = id;
+              landingProv.loadAll(); // Fetch “Most Recent”, “Today’s Avg”, and “Streak”
+            }
+            return landingProv!;
           },
         ),
       ],
